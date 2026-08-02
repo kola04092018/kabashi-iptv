@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="150dp"
+    android:layout_width="125dp"
     android:layout_height="match_parent"
-    android:layout_margin="6dp"
+    android:layout_margin="4dp"
     android:background="@drawable/channel_selector"
     android:clickable="true"
     android:focusable="true"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="6dp">
 
     <ImageView
         android:id="@+id/moviePoster"
@@ -26,7 +26,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="@android:color/white"
-        android:textSize="13sp"
+        android:textSize="11sp"
         android:textStyle="bold" />
 
     <TextView
@@ -36,6 +36,6 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="@color/accent"
-        android:textSize="10sp"
+        android:textSize="9sp"
         android:textStyle="bold" />
 </LinearLayout>

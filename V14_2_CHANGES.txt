@@ -1,0 +1,11 @@
+KABASHI IPTV V14.2
+
+Corrections:
+1. Kosovo flag artwork is now visible on all three home category cards.
+2. Android button background tint is disabled so it cannot cover the flag.
+3. Home interface is scaled down and uses less padding.
+4. Category cards are smaller.
+5. Recently added movie cards and text are smaller.
+6. Live TV channel rows and channel names are smaller.
+7. EPG sidebar, channel column, headers, and program text are more compact.
+8. Favorite-channel stars and favorites-at-top behavior remain.

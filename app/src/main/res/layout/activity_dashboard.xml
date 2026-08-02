@@ -10,15 +10,15 @@
         android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="190dp"
+            android:layout_width="165dp"
             android:layout_height="match_parent"
             android:background="#E8000000"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="8dp">
 
             <ImageView
-                android:layout_width="118dp"
-                android:layout_height="118dp"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
                 android:contentDescription="KABASHI IPTV logo"
@@ -28,8 +28,8 @@
                 android:id="@+id/homeMenu"
                 style="@style/KabashiButton.Primary"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="20dp"
+                android:layout_height="38dp"
+                android:layout_marginTop="12dp"
                 android:text="⌂  HOME"
                 android:textSize="12sp" />
 
@@ -37,7 +37,7 @@
                 android:id="@+id/liveMenu"
                 style="@style/KabashiButton.Secondary"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
+                android:layout_height="30dp"
                 android:layout_marginTop="5dp"
                 android:text="▣  LIVE TV"
                 android:textSize="12sp" />
@@ -46,7 +46,7 @@
                 android:id="@+id/moviesMenu"
                 style="@style/KabashiButton.Secondary"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
+                android:layout_height="30dp"
                 android:layout_marginTop="5dp"
                 android:text="▶  MOVIES / VOD"
                 android:textSize="11sp" />
@@ -55,7 +55,7 @@
                 android:id="@+id/seriesMenu"
                 style="@style/KabashiButton.Secondary"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
+                android:layout_height="30dp"
                 android:layout_marginTop="5dp"
                 android:text="▤  TV SERIES"
                 android:textSize="11sp" />
@@ -64,7 +64,7 @@
                 android:id="@+id/catchupMenu"
                 style="@style/KabashiButton.Secondary"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
+                android:layout_height="30dp"
                 android:layout_marginTop="5dp"
                 android:text="↶  CATCH-UP"
                 android:textSize="11sp" />
@@ -73,7 +73,7 @@
                 android:id="@+id/favoritesMenu"
                 style="@style/KabashiButton.Secondary"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
+                android:layout_height="30dp"
                 android:layout_marginTop="5dp"
                 android:text="★  FAVORITES"
                 android:textSize="11sp" />
@@ -82,7 +82,7 @@
                 android:id="@+id/multiviewMenu"
                 style="@style/KabashiButton.Secondary"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
+                android:layout_height="30dp"
                 android:layout_marginTop="5dp"
                 android:text="▦  MULTIVIEW"
                 android:textSize="11sp" />
@@ -91,7 +91,7 @@
                 android:id="@+id/settingsButton"
                 style="@style/KabashiButton.Secondary"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
+                android:layout_height="30dp"
                 android:layout_marginTop="5dp"
                 android:text="⚙  SETTINGS"
                 android:textSize="11sp" />
@@ -115,14 +115,14 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:paddingLeft="22dp"
-            android:paddingTop="14dp"
-            android:paddingRight="22dp"
-            android:paddingBottom="12dp">
+            android:paddingLeft="16dp"
+            android:paddingTop="10dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="8dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="58dp"
+                android:layout_height="48dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -132,7 +132,7 @@
                     android:layout_weight="1"
                     android:text="KABASHI IPTV"
                     android:textColor="@android:color/white"
-                    android:textSize="25sp"
+                    android:textSize="21sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -142,7 +142,7 @@
                     android:gravity="center"
                     android:text="CREATED BY MHILL KABASHI"
                     android:textColor="@android:color/white"
-                    android:textSize="18sp"
+                    android:textSize="15sp"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -174,8 +174,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="270dp"
-                android:layout_marginTop="14dp"
+                android:layout_height="225dp"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -186,27 +186,28 @@
 
                     <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="36dp"
+                        android:layout_height="30dp"
                         android:gravity="center"
                         android:text="LIVE TV"
                         android:textColor="@android:color/white"
-                        android:textSize="19sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <Button
                         android:id="@+id/liveCard"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_margin="7dp"
+                        android:layout_margin="5dp"
                         android:layout_weight="1"
                         android:background="@drawable/dashboard_card_selector"
+                        android:backgroundTint="@null"
                         android:focusable="true"
                         android:text="REPUBLIKA E KOSOVES"
                         android:textColor="@android:color/white"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:gravity="bottom|center_horizontal"
-                        android:paddingBottom="18dp" />
+                        android:paddingBottom="12dp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -217,27 +218,28 @@
 
                     <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="36dp"
+                        android:layout_height="30dp"
                         android:gravity="center"
                         android:text="MOVIES / VOD"
                         android:textColor="@android:color/white"
-                        android:textSize="19sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <Button
                         android:id="@+id/moviesCard"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_margin="7dp"
+                        android:layout_margin="5dp"
                         android:layout_weight="1"
                         android:background="@drawable/dashboard_card_selector"
+                        android:backgroundTint="@null"
                         android:focusable="true"
                         android:text="REPUBLIKA E KOSOVES"
                         android:textColor="@android:color/white"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:gravity="bottom|center_horizontal"
-                        android:paddingBottom="18dp" />
+                        android:paddingBottom="12dp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -248,27 +250,28 @@
 
                     <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="36dp"
+                        android:layout_height="30dp"
                         android:gravity="center"
                         android:text="TV SERIES"
                         android:textColor="@android:color/white"
-                        android:textSize="19sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <Button
                         android:id="@+id/seriesCard"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_margin="7dp"
+                        android:layout_margin="5dp"
                         android:layout_weight="1"
                         android:background="@drawable/dashboard_card_selector"
+                        android:backgroundTint="@null"
                         android:focusable="true"
                         android:text="REPUBLIKA E KOSOVES"
                         android:textColor="@android:color/white"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:gravity="bottom|center_horizontal"
-                        android:paddingBottom="18dp" />
+                        android:paddingBottom="12dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -278,7 +281,7 @@
                 android:layout_marginTop="8dp"
                 android:text="Recently Added"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <FrameLayout
@@ -301,7 +304,7 @@
                     android:layout_gravity="center"
                     android:text="No newly added movies were returned."
                     android:textColor="#D0D0D0"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:visibility="gone" />
             </FrameLayout>
         </LinearLayout>

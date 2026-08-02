@@ -1,0 +1,7 @@
+KABASHI IPTV V14.3
+
+Changes:
+1. Movies / VOD card now uses the same Albanian-eagle logo artwork as the sidebar logo.
+2. TV Series card now uses the same Albanian-eagle logo artwork as the sidebar logo.
+3. Live TV card still keeps the Kosovo flag card.
+4. Compact home layout and smaller channel-name text from V14.2 are preserved.
