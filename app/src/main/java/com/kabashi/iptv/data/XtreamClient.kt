@@ -13,12 +13,16 @@ import java.nio.charset.StandardCharsets
 class XtreamClient(private val credentials: Credentials) {
     private val server = credentials.serverUrl.trim().trimEnd('/')
 
-    suspend fun authenticate(): Result<Unit> = runCatching {
-        val response = getJsonObject(apiUrl())
-        val userInfo = response.optJSONObject("user_info")
-            ?: error("The server did not return Xtream user information.")
-        val authenticated = userInfo.optIntFlexible("auth") == 1
-        if (!authenticated) error(userInfo.optString("message", "Login was rejected by the provider."))
+    suspend fun authenticate(): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = getJsonObject(apiUrl())
+            val userInfo = response.optJSONObject("user_info")
+                ?: error("The server did not return Xtream user information.")
+            val authenticated = userInfo.optIntFlexible("auth") == 1
+            if (!authenticated) {
+                error(userInfo.optString("message", "Login was rejected by the provider."))
+            }
+        }
     }
 
     suspend fun getLiveCategories(): List<LiveCategory> =
