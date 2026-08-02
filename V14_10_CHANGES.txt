@@ -1,0 +1,7 @@
+KABASHI IPTV V14.10 — FLAG FIT FINAL
+
+- Uses the exact Kosovo flag reference supplied by the user.
+- Flag image aspect ratio is matched to the category cards.
+- Image fills the entire card with no blank space.
+- No stretching or cramped horizontal compression.
+- Card sizes and all other V14.9 behavior remain unchanged.
