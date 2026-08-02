@@ -11,8 +11,8 @@ android {
         applicationId = "com.kabashi.iptv"
         minSdk = 23
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 5
+        versionName = "1.4.0"
     }
 
     buildFeatures {

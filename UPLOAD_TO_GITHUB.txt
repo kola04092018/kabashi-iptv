@@ -1,12 +1,19 @@
-IMPORTANT
+KABASHI IPTV 1.4.0 — GITHUB UPLOAD
 
-Upload the CONTENTS of this folder to the ROOT of your GitHub repository.
-After upload, the repository Code page must show these directly:
+Upload EVERYTHING INSIDE this folder to the ROOT of your GitHub repository.
+The repository main page must show:
 
-app/
-.github/
+.github
+app
 build.gradle.kts
-settings.gradle.kts
 gradle.properties
+settings.gradle.kts
+README.md
 
-Do not upload the outer KABASHI_IPTV_GITHUB_READY_FIXED folder itself.
+Do not open the app folder and upload only its contents. The blue app folder itself must appear on the repository main page.
+
+After committing:
+1. Open Actions.
+2. Open Build Fire TV APK.
+3. Wait for a green check.
+4. Download KABASHI-IPTV-FireTV-APK under Artifacts.

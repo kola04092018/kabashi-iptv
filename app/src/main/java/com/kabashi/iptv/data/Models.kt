@@ -6,6 +6,13 @@ data class Credentials(
     val password: String
 )
 
+data class AccountInfo(
+    val status: String,
+    val expirationTimestamp: Long,
+    val activeConnections: Int,
+    val maxConnections: Int
+)
+
 data class LiveCategory(
     val id: String,
     val name: String
@@ -27,8 +34,26 @@ data class MediaEntry(
     val hasCatchUp: Boolean = false,
     val catchUpDays: Int = 0,
     val rating: String = "",
-    val plot: String = ""
+    val plot: String = "",
+    val addedTimestamp: Long = 0L
 )
+
+data class PlaybackChannel(
+    val id: Int,
+    val name: String,
+    val url: String,
+    val hasCatchUp: Boolean
+)
+
+object PlaybackQueueStore {
+    var channels: List<PlaybackChannel> = emptyList()
+    var currentIndex: Int = 0
+
+    fun clear() {
+        channels = emptyList()
+        currentIndex = 0
+    }
+}
 
 data class SeriesEpisode(
     val id: Int,

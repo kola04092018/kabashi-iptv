@@ -4,28 +4,29 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory
 
 /**
- * Shared player configuration for IPTV streams.
+ * Fast, tolerant native Media3 configuration for IPTV streams.
  *
- * Many Xtream providers return MPEG-TS feeds that omit access-unit delimiters or
- * IDR keyframes, use redirects between HTTP and HTTPS, or reject generic Android
- * user agents. This configuration makes Media3 more tolerant of those streams.
+ * It uses short live-TV buffers for faster channel changes, decoder fallback,
+ * permissive MPEG-TS parsing and provider-friendly HTTP headers.
  */
 object IptvPlayerFactory {
-    private const val USER_AGENT = "VLC/3.0.21 LibVLC/3.0.21"
+    private const val USER_AGENT = "VLC/3.0.21 LibVLC/3.0.21 KABASHI-IPTV/1.4"
 
     @OptIn(UnstableApi::class)
-    fun create(context: Context): ExoPlayer {
+    fun create(context: Context, subtitlesEnabled: Boolean = true): ExoPlayer {
         val httpFactory = DefaultHttpDataSource.Factory()
             .setUserAgent(USER_AGENT)
-            .setConnectTimeoutMs(20_000)
-            .setReadTimeoutMs(30_000)
+            .setConnectTimeoutMs(15_000)
+            .setReadTimeoutMs(25_000)
             .setAllowCrossProtocolRedirects(true)
             .setDefaultRequestProperties(
                 mapOf(
@@ -45,7 +46,25 @@ object IptvPlayerFactory {
         val renderersFactory = DefaultRenderersFactory(context)
             .setEnableDecoderFallback(true)
 
+        val trackSelector = DefaultTrackSelector(context).apply {
+            parameters = buildUponParameters()
+                .setSelectUndeterminedTextLanguage(subtitlesEnabled)
+                .build()
+        }
+
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                1_000,
+                8_000,
+                350,
+                700
+            )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
+
         return ExoPlayer.Builder(context, renderersFactory)
+            .setTrackSelector(trackSelector)
+            .setLoadControl(loadControl)
             .setMediaSourceFactory(mediaSourceFactory)
             .build()
     }

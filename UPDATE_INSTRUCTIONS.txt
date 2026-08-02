@@ -1,0 +1,23 @@
+KABASHI IPTV 1.4.0 — UPDATE INSTRUCTIONS
+
+EASIEST METHOD
+1. Download and extract this ZIP.
+2. Open the extracted KABASHI_IPTV_FIRETV_ENHANCED_V11 folder.
+3. In your GitHub repository, upload everything inside this folder while preserving:
+   app/
+   .github/
+   build.gradle.kts
+   settings.gradle.kts
+   gradle.properties
+4. Choose to replace files with the same names, then commit.
+5. Open Actions and wait for Build Fire TV APK.
+6. Download KABASHI-IPTV-FireTV-APK from Artifacts.
+
+INSTALLATION NOTE
+If Fire TV reports that the new APK is an incompatible update, uninstall the old KABASHI IPTV first, then install the new APK. Uninstalling removes the old saved login, but version 1.4.0 will keep the login after future normal app closes/reopens.
+
+PLAYER REMOTE CONTROLS
+UP: Previous live channel
+DOWN: Next live channel
+OK / ENTER: Show or hide controls
+BACK: Hide controls first; press Back again to exit

@@ -1,41 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="170dp"
-    android:layout_margin="8dp"
+    android:layout_height="70dp"
+    android:layout_marginBottom="6dp"
     android:background="@drawable/channel_selector"
     android:clickable="true"
     android:focusable="true"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="12dp">
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="10dp">
+
+    <TextView
+        android:id="@+id/channelNumber"
+        android:layout_width="42dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:textStyle="bold" />
 
     <ImageView
         android:id="@+id/channelLogo"
-        android:layout_width="84dp"
-        android:layout_height="84dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:contentDescription="Channel logo"
         android:scaleType="centerInside"
         android:src="@drawable/channel_placeholder" />
 
-    <TextView
-        android:id="@+id/channelName"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="7dp"
-        android:layout_weight="1"
-        android:ellipsize="end"
-        android:gravity="center"
-        android:maxLines="2"
-        android:textColor="@android:color/white"
-        android:textSize="15sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/catchUpLabel"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textColor="@color/accent"
-        android:textSize="11sp"
-        android:textStyle="bold" />
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/channelName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/catchUpLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/accent"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 </LinearLayout>

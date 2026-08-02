@@ -12,19 +12,28 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Rational
+import android.view.KeyEvent
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import com.kabashi.iptv.data.AppSettingsStore
 import com.kabashi.iptv.data.EpgItem
+import com.kabashi.iptv.data.LiveStreamMode
+import com.kabashi.iptv.data.PlaybackQueueStore
 import com.kabashi.iptv.data.SecureCredentialStore
 import com.kabashi.iptv.data.XtreamClient
 import com.kabashi.iptv.databinding.ActivityPlayerBinding
@@ -34,35 +43,37 @@ import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
 
+@OptIn(UnstableApi::class)
 class PlayerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPlayerBinding
     private lateinit var client: XtreamClient
+    private lateinit var settings: AppSettingsStore
     private var player: ExoPlayer? = null
     private var streamId = 0
-    private var streamName = "Live channel"
+    private var streamName = "Channel"
     private var liveUrl = ""
     private var hasCatchUp = false
     private var allowRecording = true
     private var currentTitle = ""
     private var currentIsLive = false
     private var hlsFallbackAttempted = false
+    private var subtitlesEnabled = true
+    private var controlsVisible = true
     private val playbackHandler = Handler(Looper.getMainLooper())
     private var playbackGeneration = 0
 
     private val notificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) {
-            startRecordingNow()
-        } else {
-            Toast.makeText(this, "Notification permission is required while recording.", Toast.LENGTH_LONG).show()
-        }
+        if (granted) startRecordingNow()
+        else Toast.makeText(this, "Notification permission is required while recording.", Toast.LENGTH_LONG).show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        enterImmersiveMode()
 
         val credentials = SecureCredentialStore(this).load()
         if (credentials == null) {
@@ -70,60 +81,80 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
         client = XtreamClient(credentials)
+        settings = AppSettingsStore(this)
+        subtitlesEnabled = settings.subtitlesEnabled
+
         streamId = intent.getIntExtra(EXTRA_STREAM_ID, 0)
-        streamName = intent.getStringExtra(EXTRA_NAME).orEmpty().ifBlank { "Live channel" }
+        streamName = intent.getStringExtra(EXTRA_NAME).orEmpty().ifBlank { "Channel" }
         hasCatchUp = intent.getBooleanExtra(EXTRA_CATCH_UP, false)
         allowRecording = intent.getBooleanExtra(EXTRA_ALLOW_RECORDING, true)
-        liveUrl = intent.getStringExtra(EXTRA_DIRECT_URL).orEmpty().ifBlank { client.liveUrl(streamId) }
+        currentIsLive = intent.getBooleanExtra(EXTRA_IS_LIVE, true)
+        val directUrl = intent.getStringExtra(EXTRA_DIRECT_URL).orEmpty()
+            .ifBlank { client.liveUrl(streamId) }
+        liveUrl = if (currentIsLive) settings.preferredLiveUrl(directUrl) else directUrl
 
         binding.title.text = streamName
+        binding.channelHint.text = if (currentIsLive && PlaybackQueueStore.channels.size > 1) {
+            "UP / DOWN: change channel"
+        } else {
+            "OK: show controls"
+        }
         binding.catchUpButton.visibility = if (hasCatchUp) View.VISIBLE else View.GONE
         binding.liveButton.visibility = View.GONE
         binding.recordButton.visibility = if (allowRecording) View.VISIBLE else View.GONE
         binding.stopRecordingButton.visibility = if (allowRecording) View.VISIBLE else View.GONE
+        binding.subtitleButton.text = if (subtitlesEnabled) "SUBTITLES ON" else "SUBTITLES OFF"
 
         binding.externalButton.setOnClickListener { openExternalPlayer(currentUrl()) }
+        binding.audioFixButton.setOnClickListener { tryAudioFix() }
+        binding.subtitleButton.setOnClickListener { toggleSubtitles() }
+        binding.settingsButton.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
         binding.recordButton.setOnClickListener { startRecording() }
         binding.stopRecordingButton.setOnClickListener { RecordingService.stop(this) }
         binding.catchUpButton.setOnClickListener { showCatchUp() }
         binding.liveButton.setOnClickListener { play(liveUrl, streamName, true) }
         binding.pipButton.visibility = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) View.VISIBLE else View.GONE
         binding.pipButton.setOnClickListener { enterPip() }
+        binding.playerView.setOnClickListener { showControlsTemporarily() }
+        binding.playerView.controllerShowTimeoutMs = if (settings.autoHideControls) 2_500 else 0
 
         initializePlayer()
-        play(liveUrl, streamName, true)
+        play(liveUrl, streamName, currentIsLive)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        enterImmersiveMode()
+        if (::settings.isInitialized) {
+            subtitlesEnabled = settings.subtitlesEnabled
+            applySubtitlePreference()
+        }
     }
 
     private fun initializePlayer() {
-        player = IptvPlayerFactory.create(this).also { exo ->
+        player = IptvPlayerFactory.create(this, subtitlesEnabled).also { exo ->
+            exo.volume = 1f
             binding.playerView.player = exo
+            applySubtitlePreference(exo)
             exo.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     binding.buffering.visibility =
                         if (playbackState == Player.STATE_BUFFERING) View.VISIBLE else View.GONE
+                    if (playbackState == Player.STATE_READY) {
+                        scheduleControlsHide()
+                        playbackHandler.postDelayed({ checkAudioAndFallback() }, 1_300L)
+                    }
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
-                    val fallback = if (currentIsLive && !hlsFallbackAttempted) {
-                        IptvPlayerFactory.hlsFallbackUrl(currentUrl())
-                    } else {
-                        null
-                    }
-                    if (fallback != null) {
-                        hlsFallbackAttempted = true
-                        Toast.makeText(
-                            this@PlayerActivity,
-                            "Trying the provider's HLS stream mode…",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        playInternal(fallback, currentTitle, true)
-                        return
-                    }
-
+                    if (tryAutomaticFallback()) return
                     binding.buffering.visibility = View.GONE
+                    showControlsTemporarily()
                     Toast.makeText(
                         this@PlayerActivity,
-                        "Built-in player error: ${error.errorCodeName}. Try External Player for an unsupported codec.",
+                        "Player error: ${error.errorCodeName}. Try AUDIO FIX or EXTERNAL PLAYER.",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -132,7 +163,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun play(url: String, title: String, live: Boolean) {
-        hlsFallbackAttempted = false
+        hlsFallbackAttempted = url.contains(".m3u8", ignoreCase = true)
         playInternal(url, title, live)
     }
 
@@ -143,6 +174,7 @@ class PlayerActivity : AppCompatActivity() {
         binding.title.text = title
         binding.liveButton.visibility = if (live) View.GONE else View.VISIBLE
         binding.buffering.visibility = View.VISIBLE
+        showControlsTemporarily()
 
         val builder = MediaItem.Builder()
             .setUri(url)
@@ -162,22 +194,150 @@ class PlayerActivity : AppCompatActivity() {
             playWhenReady = true
         }
 
-        if (live && IptvPlayerFactory.hlsFallbackUrl(url) != null) {
+        if (live && settings.liveStreamMode == LiveStreamMode.AUTO && IptvPlayerFactory.hlsFallbackUrl(url) != null) {
             playbackHandler.postDelayed({
                 val exo = player ?: return@postDelayed
                 if (generation != playbackGeneration || hlsFallbackAttempted) return@postDelayed
                 if (exo.playbackState != Player.STATE_READY && !exo.isPlaying) {
-                    val fallback = IptvPlayerFactory.hlsFallbackUrl(url) ?: return@postDelayed
-                    hlsFallbackAttempted = true
-                    Toast.makeText(
-                        this,
-                        "The TS stream is still buffering. Trying HLS mode…",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    playInternal(fallback, title, true)
+                    tryAutomaticFallback()
                 }
-            }, 12_000L)
+            }, 8_000L)
         }
+    }
+
+    private fun checkAudioAndFallback() {
+        val exo = player ?: return
+        if (!currentIsLive || hlsFallbackAttempted) return
+        val tracks = exo.currentTracks
+        val hasAudio = tracks.containsType(C.TRACK_TYPE_AUDIO) && tracks.isTypeSelected(C.TRACK_TYPE_AUDIO)
+        if (!hasAudio && settings.liveStreamMode == LiveStreamMode.AUTO) {
+            Toast.makeText(this, "No playable audio track detected. Trying HLS audio mode…", Toast.LENGTH_SHORT).show()
+            tryAutomaticFallback()
+        }
+    }
+
+    private fun tryAutomaticFallback(): Boolean {
+        if (!currentIsLive || hlsFallbackAttempted) return false
+        val fallback = IptvPlayerFactory.hlsFallbackUrl(currentUrl()) ?: return false
+        hlsFallbackAttempted = true
+        playInternal(fallback, currentTitle, true)
+        return true
+    }
+
+    private fun tryAudioFix() {
+        if (!currentIsLive) {
+            player?.volume = 1f
+            player?.prepare()
+            Toast.makeText(this, "Audio was reset.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val current = currentUrl()
+        val alternate = if (current.contains(".m3u8", ignoreCase = true)) {
+            PlaybackQueueStore.channels.getOrNull(PlaybackQueueStore.currentIndex)?.url ?: liveUrl
+        } else {
+            IptvPlayerFactory.hlsFallbackUrl(current)
+        }
+        if (alternate.isNullOrBlank() || alternate == current) {
+            Toast.makeText(this, "No alternate stream mode is available. Try External Player.", Toast.LENGTH_LONG).show()
+            return
+        }
+        hlsFallbackAttempted = alternate.contains(".m3u8", ignoreCase = true)
+        player?.volume = 1f
+        playInternal(alternate, currentTitle, true)
+        Toast.makeText(this, "Switched audio/stream mode.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun toggleSubtitles() {
+        subtitlesEnabled = !subtitlesEnabled
+        settings.subtitlesEnabled = subtitlesEnabled
+        applySubtitlePreference()
+        binding.subtitleButton.text = if (subtitlesEnabled) "SUBTITLES ON" else "SUBTITLES OFF"
+        Toast.makeText(
+            this,
+            if (subtitlesEnabled) "Embedded subtitles enabled." else "Subtitles disabled.",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun applySubtitlePreference(exo: ExoPlayer? = player) {
+        exo ?: return
+        exo.trackSelectionParameters = exo.trackSelectionParameters.buildUpon()
+            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, !subtitlesEnabled)
+            .setSelectTextByDefault(subtitlesEnabled)
+            .setSelectUndeterminedTextLanguage(subtitlesEnabled)
+            .build()
+    }
+
+    private fun switchChannel(delta: Int) {
+        if (!currentIsLive) return
+        val channels = PlaybackQueueStore.channels
+        if (channels.size < 2) {
+            Toast.makeText(this, "No other channels are available in this list.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val size = channels.size
+        val nextIndex = (PlaybackQueueStore.currentIndex + delta + size) % size
+        PlaybackQueueStore.currentIndex = nextIndex
+        val channel = channels[nextIndex]
+        streamId = channel.id
+        streamName = channel.name
+        hasCatchUp = channel.hasCatchUp
+        liveUrl = settings.preferredLiveUrl(channel.url)
+        binding.catchUpButton.visibility = if (hasCatchUp) View.VISIBLE else View.GONE
+        play(liveUrl, streamName, true)
+        Toast.makeText(this, channel.name, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    switchChannel(-1)
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    switchChannel(1)
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_MENU -> {
+                    if (controlsVisible) hideControls() else showControlsTemporarily()
+                    return true
+                }
+                KeyEvent.KEYCODE_BACK -> {
+                    if (controlsVisible) {
+                        hideControls()
+                        return true
+                    }
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    private fun showControlsTemporarily() {
+        controlsVisible = true
+        binding.controls.visibility = View.VISIBLE
+        binding.playerView.showController()
+        scheduleControlsHide()
+    }
+
+    private fun scheduleControlsHide() {
+        playbackHandler.removeCallbacks(hideControlsRunnable)
+        val inPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isInPictureInPictureMode
+        if (settings.autoHideControls && !inPip) {
+            playbackHandler.postDelayed(hideControlsRunnable, 3_000L)
+        }
+    }
+
+    private val hideControlsRunnable = Runnable { hideControls() }
+
+    private fun hideControls() {
+        controlsVisible = false
+        binding.controls.visibility = View.GONE
+        binding.playerView.hideController()
+        enterImmersiveMode()
     }
 
     private fun currentUrl(): String = binding.playerView.tag as? String ?: liveUrl
@@ -196,11 +356,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun startRecording() {
         if (currentUrl().contains(".m3u8", ignoreCase = true)) {
-            Toast.makeText(
-                this,
-                "Recording currently supports direct non-DRM transport streams.",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, "Recording supports direct non-DRM transport streams.", Toast.LENGTH_LONG).show()
             return
         }
         if (Build.VERSION.SDK_INT >= 33 &&
@@ -262,6 +418,30 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    private fun enterImmersiveMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.apply {
+                hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                )
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) enterImmersiveMode()
+    }
+
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         if (player?.isPlaying == true) enterPip()
@@ -269,7 +449,7 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-        binding.controls.visibility = if (isInPictureInPictureMode) View.GONE else View.VISIBLE
+        if (isInPictureInPictureMode) hideControls() else showControlsTemporarily()
     }
 
     override fun onDestroy() {
@@ -287,5 +467,6 @@ class PlayerActivity : AppCompatActivity() {
         const val EXTRA_CATCH_UP_DAYS = "catch_up_days"
         const val EXTRA_DIRECT_URL = "direct_url"
         const val EXTRA_ALLOW_RECORDING = "allow_recording"
+        const val EXTRA_IS_LIVE = "is_live"
     }
 }

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="720dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="KABASHI IPTV Settings"
+            android:textColor="@android:color/white"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Preferred live stream mode"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/streamModeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/streamAuto"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:buttonTint="@color/accent"
+                android:text="AUTO"
+                android:textColor="@android:color/white" />
+
+            <RadioButton
+                android:id="@+id/streamTs"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:buttonTint="@color/accent"
+                android:text="MPEG-TS"
+                android:textColor="@android:color/white" />
+
+            <RadioButton
+                android:id="@+id/streamHls"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:buttonTint="@color/accent"
+                android:text="HLS"
+                android:textColor="@android:color/white" />
+        </RadioGroup>
+
+        <Switch
+            android:id="@+id/subtitleSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="14dp"
+            android:text="Enable embedded subtitles by default"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
+
+        <Switch
+            android:id="@+id/autoHideSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Automatically hide player controls"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
+
+        <Switch
+            android:id="@+id/compactSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Compact interface and smaller menus"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="AUTO starts with MPEG-TS and automatically retries HLS when video or audio is unsupported. HLS may fix channels that play without sound."
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/cancelButton"
+                style="@style/KabashiButton.Secondary"
+                android:layout_width="120dp"
+                android:layout_height="46dp"
+                android:text="CANCEL" />
+
+            <Button
+                android:id="@+id/saveButton"
+                style="@style/KabashiButton.Primary"
+                android:layout_width="140dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="10dp"
+                android:text="SAVE" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

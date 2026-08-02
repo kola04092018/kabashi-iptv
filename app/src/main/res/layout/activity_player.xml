@@ -13,79 +13,131 @@
         app:show_buffering="when_playing"
         app:use_controller="true" />
 
-    <LinearLayout
+    <HorizontalScrollView
         android:id="@+id/controls"
         android:layout_width="match_parent"
-        android:layout_height="74dp"
+        android:layout_height="62dp"
         android:layout_gravity="top"
-        android:background="#CC10131A"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="18dp">
+        android:background="#D910131A"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="@android:color/white"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/liveButton"
-            style="@style/KabashiButton.Primary"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:text="BACK TO LIVE" />
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp">
 
-        <Button
-            android:id="@+id/catchUpButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:text="CATCH-UP" />
+            <LinearLayout
+                android:layout_width="360dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <Button
-            android:id="@+id/externalButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:text="EXTERNAL PLAYER" />
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@android:color/white"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/recordButton"
-            style="@style/KabashiButton.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:text="RECORD" />
+                <TextView
+                    android:id="@+id/channelHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="10sp" />
+            </LinearLayout>
 
-        <Button
-            android:id="@+id/stopRecordingButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:text="STOP REC" />
+            <Button
+                android:id="@+id/liveButton"
+                style="@style/KabashiButton.Primary"
+                android:layout_width="112dp"
+                android:layout_height="40dp"
+                android:text="BACK LIVE"
+                android:textSize="10sp" />
 
-        <Button
-            android:id="@+id/pipButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:text="PIP" />
-    </LinearLayout>
+            <Button
+                android:id="@+id/catchUpButton"
+                style="@style/KabashiButton.Secondary"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:text="CATCH-UP"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/audioFixButton"
+                style="@style/KabashiButton.Secondary"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:text="AUDIO FIX"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/subtitleButton"
+                style="@style/KabashiButton.Secondary"
+                android:layout_width="125dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:text="SUBTITLES ON"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/externalButton"
+                style="@style/KabashiButton.Secondary"
+                android:layout_width="125dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:text="EXTERNAL"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/recordButton"
+                style="@style/KabashiButton.Primary"
+                android:layout_width="90dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:text="RECORD"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/stopRecordingButton"
+                style="@style/KabashiButton.Secondary"
+                android:layout_width="90dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:text="STOP REC"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/pipButton"
+                style="@style/KabashiButton.Secondary"
+                android:layout_width="70dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:text="PIP"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/settingsButton"
+                style="@style/KabashiButton.Secondary"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:text="SETTINGS"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <ProgressBar
         android:id="@+id/buffering"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_gravity="center"
         android:visibility="gone" />
 </FrameLayout>

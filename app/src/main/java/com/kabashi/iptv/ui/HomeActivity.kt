@@ -8,10 +8,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.kabashi.iptv.data.AppSettingsStore
 import com.kabashi.iptv.data.ContentType
 import com.kabashi.iptv.data.MediaEntry
+import com.kabashi.iptv.data.PlaybackChannel
+import com.kabashi.iptv.data.PlaybackQueueStore
 import com.kabashi.iptv.data.SecureCredentialStore
 import com.kabashi.iptv.data.SeriesEpisode
 import com.kabashi.iptv.data.XtreamClient
@@ -23,6 +25,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var client: XtreamClient
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var channelAdapter: ChannelAdapter
+    private lateinit var settings: AppSettingsStore
     private var loadedItems: List<MediaEntry> = emptyList()
     private var currentSection = ContentType.LIVE
 
@@ -31,22 +34,31 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val store = SecureCredentialStore(this)
-        val credentials = store.load()
+        val credentials = SecureCredentialStore(this).load()
         if (credentials == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
         }
         client = XtreamClient(credentials)
+        settings = AppSettingsStore(this)
+
+        currentSection = runCatching {
+            ContentType.valueOf(intent.getStringExtra(EXTRA_SECTION).orEmpty())
+        }.getOrDefault(ContentType.LIVE)
 
         categoryAdapter = CategoryAdapter { category -> loadItems(category.id) }
         channelAdapter = ChannelAdapter(::openItem)
 
         binding.categories.layoutManager = LinearLayoutManager(this)
         binding.categories.adapter = categoryAdapter
-        binding.channels.layoutManager = GridLayoutManager(this, 4)
+        binding.categories.setHasFixedSize(true)
+        binding.categories.itemAnimator = null
+
+        binding.channels.layoutManager = LinearLayoutManager(this)
         binding.channels.adapter = channelAdapter
+        binding.channels.setHasFixedSize(true)
+        binding.channels.itemAnimator = null
 
         binding.searchInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -61,13 +73,28 @@ class HomeActivity : AppCompatActivity() {
         binding.moviesButton.setOnClickListener { switchSection(ContentType.VOD) }
         binding.seriesButton.setOnClickListener { switchSection(ContentType.SERIES) }
         binding.multiViewButton.setOnClickListener { showMultiViewPicker() }
-        binding.logoutButton.setOnClickListener {
-            store.clear()
-            startActivity(Intent(this, LoginActivity::class.java))
+        binding.settingsButton.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+        binding.homeButton.setOnClickListener {
+            startActivity(Intent(this, DashboardActivity::class.java))
             finish()
         }
 
-        switchSection(ContentType.LIVE)
+        applyCompactInterface()
+        switchSection(currentSection)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::settings.isInitialized) applyCompactInterface()
+    }
+
+    private fun applyCompactInterface() {
+        val widthDp = if (settings.compactInterface) 210 else 250
+        binding.categories.layoutParams = binding.categories.layoutParams.apply {
+            width = (widthDp * resources.displayMetrics.density).toInt()
+        }
     }
 
     private fun switchSection(section: ContentType) {
@@ -78,9 +105,9 @@ class HomeActivity : AppCompatActivity() {
         binding.liveTvButton.isSelected = section == ContentType.LIVE
         binding.moviesButton.isSelected = section == ContentType.VOD
         binding.seriesButton.isSelected = section == ContentType.SERIES
-        binding.liveTvButton.alpha = if (section == ContentType.LIVE) 1f else 0.68f
-        binding.moviesButton.alpha = if (section == ContentType.VOD) 1f else 0.68f
-        binding.seriesButton.alpha = if (section == ContentType.SERIES) 1f else 0.68f
+        binding.liveTvButton.alpha = if (section == ContentType.LIVE) 1f else 0.66f
+        binding.moviesButton.alpha = if (section == ContentType.VOD) 1f else 0.66f
+        binding.seriesButton.alpha = if (section == ContentType.SERIES) 1f else 0.66f
         binding.multiViewButton.visibility = if (section == ContentType.LIVE) View.VISIBLE else View.GONE
         binding.searchInput.hint = when (section) {
             ContentType.LIVE -> "Search live channels"
@@ -125,9 +152,11 @@ class HomeActivity : AppCompatActivity() {
             }
             if (sectionAtStart != currentSection) return@launch
             result.onSuccess {
-                loadedItems = it
-                channelAdapter.submit(it)
-                updateCount(it.size)
+                loadedItems = if (sectionAtStart == ContentType.VOD) {
+                    it.sortedByDescending { movie -> movie.addedTimestamp }
+                } else it
+                channelAdapter.submit(loadedItems)
+                updateCount(loadedItems.size)
                 setLoading(false)
                 binding.channels.scrollToPosition(0)
             }.onFailure { showError(it) }
@@ -153,19 +182,33 @@ class HomeActivity : AppCompatActivity() {
 
     private fun openItem(item: MediaEntry) {
         when (item.type) {
-            ContentType.LIVE -> openPlayer(
-                name = item.name,
-                url = client.liveUrl(item.id),
-                streamId = item.id,
-                hasCatchUp = item.hasCatchUp,
-                allowRecording = true
-            )
+            ContentType.LIVE -> {
+                val visibleChannels = channelAdapter.currentItems().filter { it.type == ContentType.LIVE }
+                PlaybackQueueStore.channels = visibleChannels.map {
+                    PlaybackChannel(
+                        id = it.id,
+                        name = it.name,
+                        url = client.liveUrl(it.id),
+                        hasCatchUp = it.hasCatchUp
+                    )
+                }
+                PlaybackQueueStore.currentIndex = visibleChannels.indexOfFirst { it.id == item.id }.coerceAtLeast(0)
+                openPlayer(
+                    name = item.name,
+                    url = client.liveUrl(item.id),
+                    streamId = item.id,
+                    hasCatchUp = item.hasCatchUp,
+                    allowRecording = true,
+                    isLive = true
+                )
+            }
             ContentType.VOD -> openPlayer(
                 name = item.name,
                 url = client.vodUrl(item.id, item.extension),
                 streamId = 0,
                 hasCatchUp = false,
-                allowRecording = false
+                allowRecording = false,
+                isLive = false
             )
             ContentType.SERIES -> loadSeriesEpisodes(item)
         }
@@ -203,7 +246,8 @@ class HomeActivity : AppCompatActivity() {
                     url = client.seriesUrl(episode.id, episode.extension),
                     streamId = 0,
                     hasCatchUp = false,
-                    allowRecording = false
+                    allowRecording = false,
+                    isLive = false
                 )
             }
             .setNegativeButton("Close", null)
@@ -215,7 +259,8 @@ class HomeActivity : AppCompatActivity() {
         url: String,
         streamId: Int,
         hasCatchUp: Boolean,
-        allowRecording: Boolean
+        allowRecording: Boolean,
+        isLive: Boolean
     ) {
         startActivity(Intent(this, PlayerActivity::class.java).apply {
             putExtra(PlayerActivity.EXTRA_STREAM_ID, streamId)
@@ -223,6 +268,7 @@ class HomeActivity : AppCompatActivity() {
             putExtra(PlayerActivity.EXTRA_DIRECT_URL, url)
             putExtra(PlayerActivity.EXTRA_CATCH_UP, hasCatchUp)
             putExtra(PlayerActivity.EXTRA_ALLOW_RECORDING, allowRecording)
+            putExtra(PlayerActivity.EXTRA_IS_LIVE, isLive)
         })
     }
 
@@ -277,5 +323,9 @@ class HomeActivity : AppCompatActivity() {
     private fun showError(error: Throwable) {
         setLoading(false)
         Toast.makeText(this, error.message ?: "Unable to load provider data.", Toast.LENGTH_LONG).show()
+    }
+
+    companion object {
+        const val EXTRA_SECTION = "content_section"
     }
 }

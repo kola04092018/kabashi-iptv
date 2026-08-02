@@ -37,7 +37,17 @@
             android:supportsPictureInPicture="true" />
 
         <activity
+            android:name=".ui.SettingsActivity"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize"
+            android:screenOrientation="landscape" />
+
+        <activity
             android:name=".ui.HomeActivity"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".ui.DashboardActivity"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize"
             android:screenOrientation="landscape" />
 

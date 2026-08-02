@@ -18,16 +18,16 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(binding.root)
         store = SecureCredentialStore(this)
 
-        store.load()?.let { saved ->
-            binding.serverInput.setText(saved.serverUrl)
-            binding.usernameInput.setText(saved.username)
-            binding.passwordInput.setText(saved.password)
+        if (store.load() != null) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
         }
 
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         binding.loginButton.setOnClickListener { signIn() }
     }
 
@@ -51,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
             XtreamClient(credentials).authenticate()
                 .onSuccess {
                     store.save(credentials)
-                    startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
+                    startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                     finish()
                 }
                 .onFailure {

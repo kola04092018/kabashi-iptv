@@ -25,6 +25,21 @@ class XtreamClient(private val credentials: Credentials) {
         }
     }
 
+    suspend fun getAccountInfo(): AccountInfo = withContext(Dispatchers.IO) {
+        val response = getJsonObject(apiUrl())
+        val userInfo = response.optJSONObject("user_info")
+            ?: error("The server did not return account information.")
+        if (userInfo.optIntFlexible("auth") != 1) {
+            error(userInfo.optString("message", "The provider rejected this account."))
+        }
+        AccountInfo(
+            status = userInfo.optString("status", "Unknown"),
+            expirationTimestamp = userInfo.optLongFlexible("exp_date"),
+            activeConnections = userInfo.optIntFlexible("active_cons"),
+            maxConnections = userInfo.optIntFlexible("max_connections")
+        )
+    }
+
     suspend fun getLiveCategories(): List<LiveCategory> =
         getCategories("get_live_categories", "All channels")
 
@@ -89,7 +104,8 @@ class XtreamClient(private val credentials: Credentials) {
                         categoryId = item.optString("category_id"),
                         type = ContentType.VOD,
                         extension = safeExtension(item.optString("container_extension", "mp4"), "mp4"),
-                        rating = item.optString("rating")
+                        rating = item.optString("rating"),
+                        addedTimestamp = item.optLongFlexible("added")
                     )
                 )
             }
@@ -111,7 +127,9 @@ class XtreamClient(private val credentials: Credentials) {
                         categoryId = item.optString("category_id"),
                         type = ContentType.SERIES,
                         rating = item.optString("rating"),
-                        plot = item.optString("plot")
+                        plot = item.optString("plot"),
+                        addedTimestamp = item.optLongFlexible("last_modified")
+                            .takeIf { it > 0L } ?: item.optLongFlexible("added")
                     )
                 )
             }
@@ -225,7 +243,7 @@ class XtreamClient(private val credentials: Credentials) {
             requestMethod = "GET"
             connectTimeout = 15_000
             readTimeout = 30_000
-            setRequestProperty("User-Agent", "KABASHI-IPTV/1.1 FireTV")
+            setRequestProperty("User-Agent", "KABASHI-IPTV/1.4 FireTV")
             setRequestProperty("Accept", "application/json")
         }
         try {
