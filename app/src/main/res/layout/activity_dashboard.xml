@@ -76,7 +76,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Choose what you want to watch"
+            android:text="CREATED BY MHILL KABASHI"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -96,7 +96,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/dashboard_card_selector"
                 android:focusable="true"
-                android:text="LIVE TV\n\nChannels • Catch-up • MultiView"
+                android:text="LIVE TV\n\nREPUBLIKA E KOSOVES"
                 android:textColor="@android:color/white"
                 android:textSize="19sp"
                 android:textStyle="bold" />
@@ -110,7 +110,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/dashboard_card_selector"
                 android:focusable="true"
-                android:text="MOVIES / VOD\n\nNew releases • Subtitles"
+                android:text="MOVIES / VOD\n\nREPUBLIKA E KOSOVES"
                 android:textColor="@android:color/white"
                 android:textSize="19sp"
                 android:textStyle="bold" />
@@ -123,7 +123,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/dashboard_card_selector"
                 android:focusable="true"
-                android:text="TV SERIES\n\nSeasons • Episodes"
+                android:text="TV SERIES\n\nREPUBLIKA E KOSOVES"
                 android:textColor="@android:color/white"
                 android:textSize="19sp"
                 android:textStyle="bold" />

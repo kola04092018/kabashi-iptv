@@ -1,17 +1,7 @@
-# KOLA IPTV — Fire TV / Android TV V12
+# KOLA IPTV V13
 
-Built-in provider URL:
-`http://vpn.lion4k.vip`
+Fire TV / Android TV source build based on the user-approved home and EPG references.
 
-Login requires only username and password.
+Built-in provider: `http://vpn.lion4k.vip`
 
-V12 changes:
-- KOLA logo with Albanian flag styling
-- Albanian flag login, dashboard, and browsing backgrounds
-- Kosovo flag category cards
-- Black focus/selection frames
-- Manual MultiView selection for 1–4 live channels
-- Saved encrypted login
-- Live TV, Movies/VOD, Series, subtitles, catch-up, recording, and external players
-
-Use only with IPTV services and content you are authorized to access.
+Build with the included GitHub Actions workflow. Use only with services and content you are authorized to access. See `V13_CHANGES.txt`.

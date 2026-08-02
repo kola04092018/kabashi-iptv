@@ -61,6 +61,7 @@ class PlayerActivity : AppCompatActivity() {
     private var controlsVisible = true
     private val playbackHandler = Handler(Looper.getMainLooper())
     private var playbackGeneration = 0
+    private val infoBarHandler = Handler(Looper.getMainLooper())
 
     private val notificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -122,6 +123,7 @@ class PlayerActivity : AppCompatActivity() {
 
         initializePlayer()
         play(liveUrl, streamName, currentIsLive)
+        if (currentIsLive) showChannelInfoBar()
     }
 
     override fun onResume() {
@@ -285,7 +287,7 @@ class PlayerActivity : AppCompatActivity() {
         liveUrl = settings.preferredLiveUrl(channel.url)
         binding.catchUpButton.visibility = if (hasCatchUp) View.VISIBLE else View.GONE
         play(liveUrl, streamName, true)
-        Toast.makeText(this, channel.name, Toast.LENGTH_SHORT).show()
+        showChannelInfoBar()
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -306,10 +308,8 @@ class PlayerActivity : AppCompatActivity() {
                     return true
                 }
                 KeyEvent.KEYCODE_BACK -> {
-                    if (controlsVisible) {
-                        hideControls()
-                        return true
-                    }
+                    if (currentIsLive) { finish(); return true }
+                    if (controlsVisible) { hideControls(); return true }
                 }
             }
         }
@@ -338,6 +338,32 @@ class PlayerActivity : AppCompatActivity() {
         binding.controls.visibility = View.GONE
         binding.playerView.hideController()
         enterImmersiveMode()
+    }
+
+
+    private fun showChannelInfoBar() {
+        if (!currentIsLive) return
+        binding.channelInfoBar.visibility = View.VISIBLE
+        binding.infoChannelName.text = streamName
+        binding.infoProgramTitle.text = "Loading program information…"
+        binding.infoProgramTime.text = ""
+        binding.infoProgress.progress = 0
+        lifecycleScope.launch {
+            runCatching { client.getEpg(streamId, 5) }.onSuccess { items ->
+                val now = System.currentTimeMillis() / 1000L
+                val current = items.firstOrNull { now in it.startTimestamp until it.stopTimestamp } ?: items.firstOrNull()
+                if (current == null) {
+                    binding.infoProgramTitle.text = "EPG unavailable"
+                } else {
+                    binding.infoProgramTitle.text = current.title
+                    binding.infoProgramTime.text = DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(current.startTimestamp * 1000L)) + " – " + DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(current.stopTimestamp * 1000L))
+                    val duration = (current.stopTimestamp-current.startTimestamp).coerceAtLeast(1L)
+                    binding.infoProgress.progress = (((now-current.startTimestamp).coerceIn(0L,duration)*100L)/duration).toInt()
+                }
+            }
+        }
+        infoBarHandler.removeCallbacksAndMessages(null)
+        infoBarHandler.postDelayed({ binding.channelInfoBar.visibility = View.GONE }, 4_500L)
     }
 
     private fun currentUrl(): String = binding.playerView.tag as? String ?: liveUrl
@@ -454,6 +480,7 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         playbackHandler.removeCallbacksAndMessages(null)
+        infoBarHandler.removeCallbacksAndMessages(null)
         binding.playerView.player = null
         player?.release()
         player = null

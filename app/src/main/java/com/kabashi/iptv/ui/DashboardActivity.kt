@@ -42,7 +42,7 @@ class DashboardActivity : AppCompatActivity() {
         binding.newMovies.setHasFixedSize(true)
         binding.newMovies.itemAnimator = null
 
-        binding.liveCard.setOnClickListener { openSection(ContentType.LIVE) }
+        binding.liveCard.setOnClickListener { startActivity(Intent(this, LiveGuideActivity::class.java)) }
         binding.moviesCard.setOnClickListener { openSection(ContentType.VOD) }
         binding.seriesCard.setOnClickListener { openSection(ContentType.SERIES) }
         binding.settingsButton.setOnClickListener {

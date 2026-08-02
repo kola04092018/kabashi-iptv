@@ -17,6 +17,7 @@ import com.kabashi.iptv.data.PlaybackQueueStore
 import com.kabashi.iptv.data.SecureCredentialStore
 import com.kabashi.iptv.data.SeriesEpisode
 import com.kabashi.iptv.data.XtreamClient
+import com.kabashi.iptv.data.FavoritesStore
 import com.kabashi.iptv.databinding.ActivityHomeBinding
 import kotlinx.coroutines.launch
 
@@ -26,6 +27,8 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var channelAdapter: ChannelAdapter
     private lateinit var settings: AppSettingsStore
+    private lateinit var favorites: FavoritesStore
+    private var favoritesOnly = false
     private var loadedItems: List<MediaEntry> = emptyList()
     private var currentSection = ContentType.LIVE
 
@@ -42,13 +45,14 @@ class HomeActivity : AppCompatActivity() {
         }
         client = XtreamClient(credentials)
         settings = AppSettingsStore(this)
+        favorites = FavoritesStore(this)
 
         currentSection = runCatching {
             ContentType.valueOf(intent.getStringExtra(EXTRA_SECTION).orEmpty())
         }.getOrDefault(ContentType.LIVE)
 
         categoryAdapter = CategoryAdapter { category -> loadItems(category.id) }
-        channelAdapter = ChannelAdapter(::openItem)
+        channelAdapter = ChannelAdapter(::openItem, ::toggleFavorite) { favorites.isFavorite(it) }
 
         binding.categories.layoutManager = LinearLayoutManager(this)
         binding.categories.adapter = categoryAdapter
@@ -73,6 +77,7 @@ class HomeActivity : AppCompatActivity() {
         binding.moviesButton.setOnClickListener { switchSection(ContentType.VOD) }
         binding.seriesButton.setOnClickListener { switchSection(ContentType.SERIES) }
         binding.multiViewButton.setOnClickListener { showMultiViewPicker() }
+        binding.favoritesButton.setOnClickListener { favoritesOnly = !favoritesOnly; applySearch(binding.searchInput.text?.toString().orEmpty()) }
         binding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
@@ -173,11 +178,16 @@ class HomeActivity : AppCompatActivity() {
 
     private fun applySearch(query: String) {
         val normalized = query.trim()
-        val result = if (normalized.isBlank()) loadedItems else loadedItems.filter {
-            it.name.contains(normalized, ignoreCase = true)
-        }
+        val base = if (favoritesOnly) favorites.filter(currentSection, loadedItems) else loadedItems
+        val result = if (normalized.isBlank()) base else base.filter { it.name.contains(normalized, ignoreCase = true) }
         channelAdapter.submit(result)
         updateCount(result.size)
+    }
+
+    private fun toggleFavorite(item: MediaEntry) {
+        val added = favorites.toggle(item)
+        Toast.makeText(this, if (added) "Added to Favorites" else "Removed from Favorites", Toast.LENGTH_SHORT).show()
+        applySearch(binding.searchInput.text?.toString().orEmpty())
     }
 
     private fun openItem(item: MediaEntry) {

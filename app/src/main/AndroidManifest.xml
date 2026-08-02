@@ -25,6 +25,11 @@
         android:usesCleartextTraffic="true">
 
         <activity
+            android:name=".ui.LiveGuideActivity"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize"
+            android:screenOrientation="landscape" />
+
+        <activity
             android:name=".ui.MultiViewActivity"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize"
             android:screenOrientation="landscape" />

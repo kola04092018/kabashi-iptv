@@ -17,7 +17,7 @@
         android:id="@+id/controls"
         android:layout_width="match_parent"
         android:layout_height="62dp"
-        android:layout_gravity="top"
+        android:layout_gravity="bottom"
         android:background="#D910131A"
         android:fillViewport="true"
         android:scrollbars="none">
@@ -133,6 +133,20 @@
                 android:textSize="10sp" />
         </LinearLayout>
     </HorizontalScrollView>
+
+
+    <LinearLayout
+        android:id="@+id/channelInfoBar"
+        android:layout_width="match_parent" android:layout_height="86dp"
+        android:layout_gravity="bottom" android:background="#E80A0A0C"
+        android:gravity="center_vertical" android:orientation="horizontal" android:paddingHorizontal="22dp" android:visibility="gone">
+        <TextView android:id="@+id/infoChannelName" android:layout_width="280dp" android:layout_height="wrap_content" android:ellipsize="end" android:maxLines="1" android:textColor="@android:color/white" android:textSize="19sp" android:textStyle="bold"/>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/infoProgramTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:maxLines="1" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold"/>
+            <TextView android:id="@+id/infoProgramTime" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#E94A45" android:textSize="12sp"/>
+            <ProgressBar android:id="@+id/infoProgress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="7dp" android:max="100"/>
+        </LinearLayout>
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/buffering"

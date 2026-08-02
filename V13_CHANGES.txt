@@ -1,0 +1,19 @@
+KOLA IPTV V13 — Approved Design Build
+
+Implemented in source:
+- Built-in provider URL; username/password login only
+- Saved encrypted login
+- Approved KOLA red/black home wording and Kosovo category cards
+- CREATED BY MHILL KABASHI header
+- Favorites persistence for channels, movies, and series (long-press item; Favorites filter)
+- New Live TV Guide activity with categories, channel list, medium live preview, current/next EPG, description and progress
+- First OK plays preview; second OK on same channel opens fullscreen
+- BACK from fullscreen returns to Live Guide while keeping the selected queue
+- UP/DOWN changes channels in fullscreen
+- Channel changes show a bottom-only channel/EPG information bar that auto-hides
+- Manual 1–4 channel MultiView remains included
+- Subtitles, settings, audio fallback, catch-up, recording and external player remain included
+
+Notes:
+- EPG visibility depends on provider EPG data.
+- Audio/subtitle availability depends on each stream and Fire TV codec support.

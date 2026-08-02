@@ -193,6 +193,28 @@ class XtreamClient(private val credentials: Credentials) {
         }.sortedByDescending { it.startTimestamp }
     }
 
+
+    suspend fun getEpg(streamId: Int, limit: Int = 12): List<EpgItem> = withContext(Dispatchers.IO) {
+        val response = getJsonObject(apiUrl("get_short_epg", mapOf("stream_id" to streamId.toString(), "limit" to limit.toString())))
+        val array = response.optJSONArray("epg_listings") ?: JSONArray()
+        buildList {
+            for (i in 0 until array.length()) {
+                val item = array.optJSONObject(i) ?: continue
+                val startTs = item.optLongFlexible("start_timestamp")
+                val stopTs = item.optLongFlexible("stop_timestamp")
+                if (startTs <= 0L || stopTs <= startTs) continue
+                add(EpgItem(
+                    title = decodeBase64IfNeeded(item.optString("title", "Program")),
+                    description = decodeBase64IfNeeded(item.optString("description")),
+                    start = item.optString("start"),
+                    end = item.optString("end"),
+                    startTimestamp = startTs,
+                    stopTimestamp = stopTs
+                ))
+            }
+        }.sortedBy { it.startTimestamp }
+    }
+
     fun liveUrl(streamId: Int): String =
         "$server/live/${path(credentials.username)}/${path(credentials.password)}/$streamId.ts"
 
@@ -243,7 +265,7 @@ class XtreamClient(private val credentials: Credentials) {
             requestMethod = "GET"
             connectTimeout = 15_000
             readTimeout = 30_000
-            setRequestProperty("User-Agent", "KABASHI-IPTV/1.4 FireTV")
+            setRequestProperty("User-Agent", "KOLA-IPTV/1.6 FireTV")
             setRequestProperty("Accept", "application/json")
         }
         try {
