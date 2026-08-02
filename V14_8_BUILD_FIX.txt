@@ -1,0 +1,5 @@
+KABASHI IPTV V14.8 BUILD FIX
+
+Fixed the Kotlin compilation error in LiveGuideActivity.kt.
+The EPG upcoming-program list now correctly uses joinToString("\n").
+All V14.7 functional and visual changes remain included.

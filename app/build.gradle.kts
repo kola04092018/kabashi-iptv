@@ -12,7 +12,7 @@ android {
         minSdk = 23
         targetSdk = 34
         versionCode = 12
-        versionName = "1.7.7"
+        versionName = "1.7.8"
         buildConfigField("String", "DEFAULT_SERVER_URL", "\"http://vpn.lion4k.vip\"")
     }
 

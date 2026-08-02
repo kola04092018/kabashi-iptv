@@ -186,8 +186,7 @@ class LiveGuideActivity : AppCompatActivity() {
         val duration = (current.stopTimestamp - current.startTimestamp).coerceAtLeast(1)
         binding.programProgress.progress = (((now - current.startTimestamp).coerceIn(0, duration) * 100) / duration).toInt()
         binding.nextPrograms.text = items.filter { it.startTimestamp >= current.stopTimestamp }.take(8)
-            .joinToString("
-") { time(it.startTimestamp) + "   " + it.title }
+            .joinToString("\n") { time(it.startTimestamp) + "   " + it.title }
             .ifBlank { "No upcoming programs" }
     }
 
