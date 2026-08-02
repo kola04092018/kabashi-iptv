@@ -1,0 +1,9 @@
+KABASHI IPTV V14.1 BUILD FIX
+
+Fixed GitHub Actions Kotlin compiler error:
+ChannelAdapter.kt: unresolved reference View
+
+Added:
+import android.view.View
+
+This resolves View.VISIBLE and View.GONE used by the favorite star indicator.
