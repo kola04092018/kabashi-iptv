@@ -1,0 +1,8 @@
+KABASHI IPTV V14.14 — VLC CHANNEL SWITCHING + DEFAULT PLAYER
+
+- VLC Compatibility Mode now supports UP/DOWN and CHANNEL UP/DOWN switching.
+- VLC remains active while changing channels, preserving compatible audio decoding.
+- Added Settings > Default player: Internal, VLC Compat, or External.
+- External default opens the Android-selected installed video player automatically.
+- If no external player exists, the app falls back to the internal player.
+- Stream compatibility URL fallback and remembered working URL remain enabled.

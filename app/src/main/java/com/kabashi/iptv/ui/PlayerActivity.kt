@@ -36,6 +36,7 @@ import com.kabashi.iptv.data.AppSettingsStore
 import com.kabashi.iptv.data.EpgItem
 import com.kabashi.iptv.data.LiveStreamMode
 import com.kabashi.iptv.data.PlaybackQueueStore
+import com.kabashi.iptv.data.PlaybackEngine
 import com.kabashi.iptv.data.PlaybackCompatibilityStore
 import com.kabashi.iptv.data.SecureCredentialStore
 import com.kabashi.iptv.data.XtreamClient
@@ -106,6 +107,21 @@ class PlayerActivity : AppCompatActivity() {
             if (remembered in streamCandidates) {
                 streamCandidates = listOf(remembered) + streamCandidates.filterNot { it == remembered }
             }
+        }
+
+        when (settings.playbackEngine) {
+            PlaybackEngine.VLC -> {
+                openVlcAudioPlayer(streamCandidates.firstOrNull().orEmpty())
+                finish()
+                return
+            }
+            PlaybackEngine.EXTERNAL -> {
+                if (openExternalPlayer(streamCandidates.firstOrNull().orEmpty(), useChooser = false)) {
+                    finish()
+                    return
+                }
+            }
+            PlaybackEngine.INTERNAL -> Unit
         }
 
         binding.title.text = streamName
@@ -442,25 +458,28 @@ class PlayerActivity : AppCompatActivity() {
     private fun currentUrl(): String = binding.playerView.tag as? String ?: liveUrl
 
 
-    private fun openVlcAudioPlayer() {
-        val urls = if (currentIsLive) buildStreamCandidates(currentUrl()) else listOf(currentUrl())
+    private fun openVlcAudioPlayer(initialUrl: String = currentUrl()) {
+        val urls = if (currentIsLive) buildStreamCandidates(initialUrl) else listOf(initialUrl)
         startActivity(Intent(this, VlcAudioPlayerActivity::class.java).apply {
             putStringArrayListExtra(VlcAudioPlayerActivity.EXTRA_URLS, ArrayList(urls))
-            putExtra(VlcAudioPlayerActivity.EXTRA_URL, currentUrl())
+            putExtra(VlcAudioPlayerActivity.EXTRA_URL, initialUrl)
             putExtra(VlcAudioPlayerActivity.EXTRA_TITLE, currentTitle.ifBlank { streamName })
             putExtra(VlcAudioPlayerActivity.EXTRA_STREAM_ID, streamId)
         })
     }
 
-    private fun openExternalPlayer(url: String) {
+    private fun openExternalPlayer(url: String, useChooser: Boolean = true): Boolean {
+        if (url.isBlank()) return false
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(Uri.parse(url), "video/*")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        try {
-            startActivity(Intent.createChooser(intent, "Open with external player"))
+        return try {
+            startActivity(if (useChooser) Intent.createChooser(intent, "Open with external player") else intent)
+            true
         } catch (_: ActivityNotFoundException) {
-            Toast.makeText(this, "No external video player is installed.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "No external video player is installed. Using the internal player instead.", Toast.LENGTH_LONG).show()
+            false
         }
     }
 

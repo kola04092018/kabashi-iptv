@@ -72,6 +72,57 @@
                 android:textColor="@android:color/white" />
         </RadioGroup>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Default player"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/playerModeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/playerInternal"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:buttonTint="@color/accent"
+                android:text="INTERNAL"
+                android:textColor="@android:color/white" />
+
+            <RadioButton
+                android:id="@+id/playerVlc"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:buttonTint="@color/accent"
+                android:text="VLC COMPAT"
+                android:textColor="@android:color/white" />
+
+            <RadioButton
+                android:id="@+id/playerExternal"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:buttonTint="@color/accent"
+                android:text="EXTERNAL"
+                android:textColor="@android:color/white" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="VLC COMPAT keeps channel switching inside the app. EXTERNAL opens the installed player selected by Android."
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
         <Switch
             android:id="@+id/subtitleSwitch"
             android:layout_width="match_parent"

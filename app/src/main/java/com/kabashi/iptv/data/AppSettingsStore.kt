@@ -8,6 +8,12 @@ enum class LiveStreamMode {
     HLS
 }
 
+enum class PlaybackEngine {
+    INTERNAL,
+    VLC,
+    EXTERNAL
+}
+
 class AppSettingsStore(context: Context) {
     private val prefs = context.getSharedPreferences("kabashi_app_settings", Context.MODE_PRIVATE)
 
@@ -16,6 +22,12 @@ class AppSettingsStore(context: Context) {
             LiveStreamMode.valueOf(prefs.getString(KEY_STREAM_MODE, LiveStreamMode.AUTO.name).orEmpty())
         }.getOrDefault(LiveStreamMode.AUTO)
         set(value) = prefs.edit().putString(KEY_STREAM_MODE, value.name).apply()
+
+    var playbackEngine: PlaybackEngine
+        get() = runCatching {
+            PlaybackEngine.valueOf(prefs.getString(KEY_PLAYBACK_ENGINE, PlaybackEngine.INTERNAL.name).orEmpty())
+        }.getOrDefault(PlaybackEngine.INTERNAL)
+        set(value) = prefs.edit().putString(KEY_PLAYBACK_ENGINE, value.name).apply()
 
     var subtitlesEnabled: Boolean
         get() = prefs.getBoolean(KEY_SUBTITLES, true)
@@ -52,6 +64,7 @@ class AppSettingsStore(context: Context) {
 
     private companion object {
         const val KEY_STREAM_MODE = "live_stream_mode"
+        const val KEY_PLAYBACK_ENGINE = "playback_engine"
         const val KEY_SUBTITLES = "subtitles_enabled"
         const val KEY_AUTO_HIDE_CONTROLS = "auto_hide_controls"
         const val KEY_COMPACT_INTERFACE = "compact_interface"

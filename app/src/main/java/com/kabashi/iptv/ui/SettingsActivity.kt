@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.kabashi.iptv.R
 import com.kabashi.iptv.data.AppSettingsStore
 import com.kabashi.iptv.data.LiveStreamMode
+import com.kabashi.iptv.data.PlaybackEngine
 import com.kabashi.iptv.databinding.ActivitySettingsBinding
 
 class SettingsActivity : AppCompatActivity() {
@@ -23,6 +24,11 @@ class SettingsActivity : AppCompatActivity() {
             LiveStreamMode.MPEG_TS -> binding.streamModeGroup.check(R.id.streamTs)
             LiveStreamMode.HLS -> binding.streamModeGroup.check(R.id.streamHls)
         }
+        when (settings.playbackEngine) {
+            PlaybackEngine.INTERNAL -> binding.playerInternal.check()
+            PlaybackEngine.VLC -> binding.playerVlc.check()
+            PlaybackEngine.EXTERNAL -> binding.playerExternal.check()
+        }
         binding.subtitleSwitch.isChecked = settings.subtitlesEnabled
         binding.autoHideSwitch.isChecked = settings.autoHideControls
         binding.compactSwitch.isChecked = settings.compactInterface
@@ -32,6 +38,11 @@ class SettingsActivity : AppCompatActivity() {
                 R.id.streamTs -> LiveStreamMode.MPEG_TS
                 R.id.streamHls -> LiveStreamMode.HLS
                 else -> LiveStreamMode.AUTO
+            }
+            settings.playbackEngine = when (binding.playerModeGroup.checkedRadioButtonId) {
+                R.id.playerVlc -> PlaybackEngine.VLC
+                R.id.playerExternal -> PlaybackEngine.EXTERNAL
+                else -> PlaybackEngine.INTERNAL
             }
             settings.subtitlesEnabled = binding.subtitleSwitch.isChecked
             settings.autoHideControls = binding.autoHideSwitch.isChecked

@@ -11,6 +11,8 @@ import android.view.WindowInsetsController
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.kabashi.iptv.data.PlaybackCompatibilityStore
+import com.kabashi.iptv.data.PlaybackQueueStore
+import com.kabashi.iptv.player.IptvPlayerFactory
 import com.kabashi.iptv.databinding.ActivityVlcAudioPlayerBinding
 import org.videolan.libvlc.LibVLC
 import org.videolan.libvlc.Media
@@ -26,6 +28,8 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
     private var candidateIndex = 0
     private var streamId = 0
     private var reachedPlaying = false
+    private var channelIndex = 0
+    private var channelTitle = "VLC Compatibility Mode"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +49,9 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
             candidates = listOf(remembered) + candidates.filterNot { it == remembered }
         }
 
-        val title = intent.getStringExtra(EXTRA_TITLE).orEmpty().ifBlank { "VLC Compatibility Mode" }
-        binding.vlcTitle.text = title
+        channelIndex = PlaybackQueueStore.currentIndex.coerceIn(0, (PlaybackQueueStore.channels.size - 1).coerceAtLeast(0))
+        channelTitle = intent.getStringExtra(EXTRA_TITLE).orEmpty().ifBlank { "VLC Compatibility Mode" }
+        binding.vlcTitle.text = channelTitle
         if (candidates.isEmpty()) {
             Toast.makeText(this, "No usable stream URL was provided.", Toast.LENGTH_LONG).show()
             finish()
@@ -92,8 +97,7 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
         candidateIndex = index
         reachedPlaying = false
         binding.vlcLoading.visibility = View.VISIBLE
-        binding.vlcTitle.text = intent.getStringExtra(EXTRA_TITLE).orEmpty().ifBlank { "VLC Compatibility Mode" } +
-            "  •  Mode ${index + 1}/${candidates.size}"
+        binding.vlcTitle.text = "$channelTitle  •  Mode ${index + 1}/${candidates.size}  •  ↑/↓ Channel"
         val player = vlcPlayer ?: return
         player.stop()
         val media = Media(libVlc, Uri.parse(candidates[index])).apply {
@@ -120,6 +124,41 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
         return true
     }
 
+
+    private fun buildChannelCandidates(url: String, id: Int): List<String> {
+        val alternate = IptvPlayerFactory.alternateLiveUrl(url)
+        val base = listOfNotNull(url, alternate)
+            .map { it.trim() }
+            .filter { it.startsWith("http://") || it.startsWith("https://") }
+            .distinct()
+        val remembered = compatibility.preferredUrl(id)
+        return if (!remembered.isNullOrBlank() && remembered in base) {
+            listOf(remembered) + base.filterNot { it == remembered }
+        } else base
+    }
+
+    private fun switchChannel(delta: Int) {
+        val channels = PlaybackQueueStore.channels
+        if (channels.size < 2) {
+            Toast.makeText(this, "No other channels are available in this list.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        channelIndex = (channelIndex + delta + channels.size) % channels.size
+        PlaybackQueueStore.currentIndex = channelIndex
+        val channel = channels[channelIndex]
+        streamId = channel.id
+        channelTitle = channel.name
+        candidates = buildChannelCandidates(channel.url, channel.id)
+        candidateIndex = 0
+        if (candidates.isEmpty()) {
+            Toast.makeText(this, "No usable URL for ${channel.name}.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        binding.vlcControls.visibility = View.VISIBLE
+        playCandidate(0)
+        Toast.makeText(this, channel.name, Toast.LENGTH_SHORT).show()
+    }
+
     private fun toggleControls() {
         binding.vlcControls.visibility = if (binding.vlcControls.visibility == View.VISIBLE) View.GONE else View.VISIBLE
         if (binding.vlcControls.visibility == View.VISIBLE) scheduleControlsHide()
@@ -135,6 +174,12 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
             when (event.keyCode) {
                 KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_MENU -> {
                     toggleControls(); return true
+                }
+                KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> {
+                    switchChannel(-1); return true
+                }
+                KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> {
+                    switchChannel(1); return true
                 }
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
                     if (!tryNextCandidate()) Toast.makeText(this, "No more stream modes.", Toast.LENGTH_SHORT).show()
