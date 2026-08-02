@@ -1,0 +1,8 @@
+KABASHI IPTV V14.12 — VLC AUDIO EXPERIMENT
+
+Only audio fallback was changed.
+- Media3 remains the default fast player.
+- New VLC AUDIO button opens the same stream in an internal LibVLC player.
+- Intended for channels whose audio codec is not decoded by the Fire TV MediaCodec stack.
+- APK size will be significantly larger because native VLC codec libraries are included.
+- All design, Kosovo cards, login, favorites, EPG, and navigation remain unchanged.

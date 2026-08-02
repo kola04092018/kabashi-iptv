@@ -36,6 +36,7 @@ import com.kabashi.iptv.data.AppSettingsStore
 import com.kabashi.iptv.data.EpgItem
 import com.kabashi.iptv.data.LiveStreamMode
 import com.kabashi.iptv.data.PlaybackQueueStore
+import com.kabashi.iptv.data.PlaybackCompatibilityStore
 import com.kabashi.iptv.data.SecureCredentialStore
 import com.kabashi.iptv.data.XtreamClient
 import com.kabashi.iptv.databinding.ActivityPlayerBinding
@@ -50,6 +51,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPlayerBinding
     private lateinit var client: XtreamClient
     private lateinit var settings: AppSettingsStore
+    private lateinit var compatibility: PlaybackCompatibilityStore
     private var player: ExoPlayer? = null
     private var streamId = 0
     private var streamName = "Channel"
@@ -59,6 +61,9 @@ class PlayerActivity : AppCompatActivity() {
     private var currentTitle = ""
     private var currentIsLive = false
     private var hlsFallbackAttempted = false
+    private var streamCandidates: List<String> = emptyList()
+    private var candidateIndex = 0
+    private var reachedReady = false
     private var subtitlesEnabled = true
     private var controlsVisible = true
     private val playbackHandler = Handler(Looper.getMainLooper())
@@ -85,6 +90,7 @@ class PlayerActivity : AppCompatActivity() {
         }
         client = XtreamClient(credentials)
         settings = AppSettingsStore(this)
+        compatibility = PlaybackCompatibilityStore(this)
         subtitlesEnabled = settings.subtitlesEnabled
 
         streamId = intent.getIntExtra(EXTRA_STREAM_ID, 0)
@@ -95,6 +101,12 @@ class PlayerActivity : AppCompatActivity() {
         val directUrl = intent.getStringExtra(EXTRA_DIRECT_URL).orEmpty()
             .ifBlank { client.liveUrl(streamId) }
         liveUrl = if (currentIsLive) settings.preferredLiveUrl(directUrl) else directUrl
+        streamCandidates = buildStreamCandidates(liveUrl)
+        compatibility.preferredUrl(streamId)?.let { remembered ->
+            if (remembered in streamCandidates) {
+                streamCandidates = listOf(remembered) + streamCandidates.filterNot { it == remembered }
+            }
+        }
 
         binding.title.text = streamName
         binding.channelHint.text = if (currentIsLive && PlaybackQueueStore.channels.size > 1) {
@@ -111,6 +123,7 @@ class PlayerActivity : AppCompatActivity() {
 
         binding.externalButton.setOnClickListener { openExternalPlayer(currentUrl()) }
         binding.audioFixButton.setOnClickListener { showAudioTrackMenu() }
+        binding.vlcAudioButton.setOnClickListener { openVlcAudioPlayer() }
         binding.subtitleButton.setOnClickListener { toggleSubtitles() }
         binding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
@@ -148,6 +161,8 @@ class PlayerActivity : AppCompatActivity() {
                     binding.buffering.visibility =
                         if (playbackState == Player.STATE_BUFFERING) View.VISIBLE else View.GONE
                     if (playbackState == Player.STATE_READY) {
+                        reachedReady = true
+                        compatibility.savePreferredUrl(streamId, currentUrl())
                         scheduleControlsHide()
                         playbackHandler.postDelayed({ checkAudioAndFallback() }, 1_300L)
                     }
@@ -171,23 +186,48 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    private fun buildStreamCandidates(primary: String): List<String> {
+        if (!currentIsLive) return listOf(primary).filter { it.isNotBlank() }
+        val canonicalTs = client.liveUrl(streamId)
+        val canonicalHls = IptvPlayerFactory.alternateLiveUrl(canonicalTs)
+        val primaryAlternate = IptvPlayerFactory.alternateLiveUrl(primary)
+        return listOf(primary, primaryAlternate, canonicalTs, canonicalHls)
+            .filterNotNull()
+            .map { it.trim() }
+            .filter { it.startsWith("http://") || it.startsWith("https://") }
+            .distinct()
+    }
+
     private fun play(url: String, title: String, live: Boolean) {
         hlsFallbackAttempted = false
-        playInternal(url, title, live)
+        reachedReady = false
+        if (live) {
+            streamCandidates = buildStreamCandidates(url)
+            compatibility.preferredUrl(streamId)?.let { remembered ->
+                if (remembered in streamCandidates) {
+                    streamCandidates = listOf(remembered) + streamCandidates.filterNot { it == remembered }
+                }
+            }
+            candidateIndex = streamCandidates.indexOf(url).takeIf { it >= 0 } ?: 0
+            playInternal(streamCandidates.getOrElse(candidateIndex) { url }, title, true)
+        } else {
+            streamCandidates = listOf(url)
+            candidateIndex = 0
+            playInternal(url, title, false)
+        }
     }
 
     private fun playInternal(url: String, title: String, live: Boolean) {
         currentTitle = title
         currentIsLive = live
+        reachedReady = false
         binding.playerView.tag = url
         binding.title.text = title
         binding.liveButton.visibility = if (live) View.GONE else View.VISIBLE
         binding.buffering.visibility = View.VISIBLE
         showControlsTemporarily()
 
-        val builder = MediaItem.Builder()
-            .setUri(url)
-            .setMediaId(url)
+        val builder = MediaItem.Builder().setUri(url).setMediaId(url)
         when {
             url.contains(".m3u8", true) -> builder.setMimeType(MimeTypes.APPLICATION_M3U8)
             url.contains(".mpd", true) -> builder.setMimeType(MimeTypes.APPLICATION_MPD)
@@ -196,42 +236,40 @@ class PlayerActivity : AppCompatActivity() {
 
         val generation = ++playbackGeneration
         player?.apply {
-            stop()
-            clearMediaItems()
-            setMediaItem(builder.build())
-            prepare()
-            playWhenReady = true
+            stop(); clearMediaItems(); setMediaItem(builder.build()); prepare(); playWhenReady = true
         }
-
-        if (live && settings.liveStreamMode == LiveStreamMode.AUTO && IptvPlayerFactory.alternateLiveUrl(url) != null) {
+        if (live) {
             playbackHandler.postDelayed({
                 val exo = player ?: return@postDelayed
-                if (generation != playbackGeneration || hlsFallbackAttempted) return@postDelayed
-                if (exo.playbackState != Player.STATE_READY && !exo.isPlaying) {
-                    tryAutomaticFallback()
-                }
-            }, 8_000L)
+                if (generation != playbackGeneration || reachedReady) return@postDelayed
+                if (exo.playbackState != Player.STATE_READY && !exo.isPlaying) tryNextCandidate()
+            }, 9_000L)
         }
     }
 
     private fun checkAudioAndFallback() {
         val exo = player ?: return
-        if (!currentIsLive || hlsFallbackAttempted) return
+        if (!currentIsLive) return
         val tracks = exo.currentTracks
         val hasAudio = tracks.containsType(C.TRACK_TYPE_AUDIO) && tracks.isTypeSelected(C.TRACK_TYPE_AUDIO)
-        if (!hasAudio && settings.liveStreamMode == LiveStreamMode.AUTO) {
-            Toast.makeText(this, "No playable audio track detected. Trying HLS audio mode…", Toast.LENGTH_SHORT).show()
-            tryAutomaticFallback()
+        if (!hasAudio) {
+            Toast.makeText(this, "No playable audio track detected. Trying another stream mode…", Toast.LENGTH_SHORT).show()
+            tryNextCandidate()
         }
     }
 
-    private fun tryAutomaticFallback(): Boolean {
-        if (!currentIsLive || hlsFallbackAttempted) return false
-        val fallback = IptvPlayerFactory.alternateLiveUrl(currentUrl()) ?: return false
+    private fun tryNextCandidate(): Boolean {
+        if (!currentIsLive) return false
+        val next = candidateIndex + 1
+        if (next >= streamCandidates.size) return false
+        candidateIndex = next
         hlsFallbackAttempted = true
-        playInternal(fallback, currentTitle, true)
+        playInternal(streamCandidates[next], currentTitle, true)
+        Toast.makeText(this, "Trying stream mode ${next + 1}/${streamCandidates.size}", Toast.LENGTH_SHORT).show()
         return true
     }
+
+    private fun tryAutomaticFallback(): Boolean = tryNextCandidate()
 
     private fun ensureAudioSelection(tracks: Tracks) {
         val exo = player ?: return
@@ -271,26 +309,15 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun tryAudioFix() {
+        player?.volume = 1f
         if (!currentIsLive) {
-            player?.volume = 1f
             player?.prepare()
             Toast.makeText(this, "Audio was reset.", Toast.LENGTH_SHORT).show()
             return
         }
-        val current = currentUrl()
-        val alternate = if (current.contains(".m3u8", ignoreCase = true)) {
-            PlaybackQueueStore.channels.getOrNull(PlaybackQueueStore.currentIndex)?.url ?: liveUrl
-        } else {
-            IptvPlayerFactory.alternateLiveUrl(current)
+        if (!tryNextCandidate()) {
+            Toast.makeText(this, "All native stream modes were tried. Use VLC AUDIO for wider codec support.", Toast.LENGTH_LONG).show()
         }
-        if (alternate.isNullOrBlank() || alternate == current) {
-            Toast.makeText(this, "No alternate stream mode is available. Try External Player.", Toast.LENGTH_LONG).show()
-            return
-        }
-        hlsFallbackAttempted = true
-        player?.volume = 1f
-        playInternal(alternate, currentTitle, true)
-        Toast.makeText(this, "Switched audio/stream mode.", Toast.LENGTH_SHORT).show()
     }
 
     private fun toggleSubtitles() {
@@ -330,6 +357,7 @@ class PlayerActivity : AppCompatActivity() {
         streamName = channel.name
         hasCatchUp = channel.hasCatchUp
         liveUrl = settings.preferredLiveUrl(channel.url)
+        compatibility.clearPreferredUrl(streamId)
         binding.catchUpButton.visibility = if (hasCatchUp) View.VISIBLE else View.GONE
         play(liveUrl, streamName, true)
         showChannelInfoBar()
@@ -412,6 +440,17 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun currentUrl(): String = binding.playerView.tag as? String ?: liveUrl
+
+
+    private fun openVlcAudioPlayer() {
+        val urls = if (currentIsLive) buildStreamCandidates(currentUrl()) else listOf(currentUrl())
+        startActivity(Intent(this, VlcAudioPlayerActivity::class.java).apply {
+            putStringArrayListExtra(VlcAudioPlayerActivity.EXTRA_URLS, ArrayList(urls))
+            putExtra(VlcAudioPlayerActivity.EXTRA_URL, currentUrl())
+            putExtra(VlcAudioPlayerActivity.EXTRA_TITLE, currentTitle.ifBlank { streamName })
+            putExtra(VlcAudioPlayerActivity.EXTRA_STREAM_ID, streamId)
+        })
+    }
 
     private fun openExternalPlayer(url: String) {
         val intent = Intent(Intent.ACTION_VIEW).apply {

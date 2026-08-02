@@ -1,0 +1,8 @@
+KABASHI IPTV V14.13 — Stream Compatibility
+
+Only playback compatibility was changed.
+- Media3 now tries: original direct source, its alternate extension, Xtream TS, and Xtream HLS.
+- VLC Compatibility mode receives all candidate URLs and retries them automatically.
+- VLC sends IPTV-friendly User-Agent and Referrer options.
+- The successful URL is remembered per channel for faster playback next time.
+- Existing design, cards, categories, EPG, favorites, and navigation remain unchanged.

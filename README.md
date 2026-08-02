@@ -24,3 +24,7 @@ This source project is for Android TV and Fire TV and should only be used with I
 - Card size left unchanged.
 - Home screen keeps all 3 Kosovo cards with REPUBLIKA E KOSOVES.
 - Prepared as the corrected next package for rebuilding the APK.
+
+
+## V14.13
+Automatic Direct/TS/HLS and Media3/VLC stream compatibility retry added.
