@@ -24,90 +24,162 @@
                 android:contentDescription="KABASHI IPTV logo"
                 android:src="@drawable/app_icon" />
 
-            <Button
+            <TextView
                 android:id="@+id/homeMenu"
-                style="@style/KabashiButton.Primary"
+                android:background="@drawable/sidebar_home_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
                 android:layout_height="38dp"
                 android:layout_marginTop="12dp"
                 android:text="⌂  HOME"
-                android:textSize="12sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
 
-            <Button
+            <TextView
                 android:id="@+id/liveMenu"
-                style="@style/KabashiButton.Secondary"
+                android:background="@drawable/sidebar_button_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="38dp"
                 android:layout_marginTop="5dp"
                 android:text="▣  LIVE TV"
-                android:textSize="12sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
 
-            <Button
+            <TextView
                 android:id="@+id/moviesMenu"
-                style="@style/KabashiButton.Secondary"
+                android:background="@drawable/sidebar_button_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="38dp"
                 android:layout_marginTop="5dp"
                 android:text="▶  MOVIES / VOD"
-                android:textSize="11sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
 
-            <Button
+            <TextView
                 android:id="@+id/seriesMenu"
-                style="@style/KabashiButton.Secondary"
+                android:background="@drawable/sidebar_button_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="38dp"
                 android:layout_marginTop="5dp"
                 android:text="▤  TV SERIES"
-                android:textSize="11sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
 
-            <Button
+            <TextView
                 android:id="@+id/catchupMenu"
-                style="@style/KabashiButton.Secondary"
+                android:background="@drawable/sidebar_button_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="38dp"
                 android:layout_marginTop="5dp"
                 android:text="↶  CATCH-UP"
-                android:textSize="11sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
 
-            <Button
+            <TextView
                 android:id="@+id/favoritesMenu"
-                style="@style/KabashiButton.Secondary"
+                android:background="@drawable/sidebar_button_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="38dp"
                 android:layout_marginTop="5dp"
                 android:text="★  FAVORITES"
-                android:textSize="11sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
 
-            <Button
+            <TextView
                 android:id="@+id/multiviewMenu"
-                style="@style/KabashiButton.Secondary"
+                android:background="@drawable/sidebar_button_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="38dp"
                 android:layout_marginTop="5dp"
                 android:text="▦  MULTIVIEW"
-                android:textSize="11sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
 
-            <Button
+            <TextView
                 android:id="@+id/settingsButton"
-                style="@style/KabashiButton.Secondary"
+                android:background="@drawable/sidebar_button_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="38dp"
                 android:layout_marginTop="5dp"
                 android:text="⚙  SETTINGS"
-                android:textSize="11sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
 
             <Space
                 android:layout_width="1dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <Button
+            <TextView
                 android:id="@+id/logoutButton"
-                style="@style/KabashiButton.Secondary"
+                android:background="@drawable/sidebar_button_selector"
+                android:backgroundTint="@null"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="38dp"
                 android:text="LOG OUT"
-                android:textSize="10sp" />
+                android:textSize="10sp" 
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -193,14 +265,14 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <Button
+                    <TextView
                         android:id="@+id/liveCard"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_margin="5dp"
                         android:layout_weight="1"
                         android:background="@drawable/dashboard_card_selector"
-                        android:backgroundTint="@null"
+                                                android:clickable="true"
                         android:focusable="true"
                         android:text="REPUBLIKA E KOSOVES"
                         android:textColor="@android:color/white"
@@ -225,14 +297,14 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <Button
+                    <TextView
                         android:id="@+id/moviesCard"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_margin="5dp"
                         android:layout_weight="1"
                         android:background="@drawable/dashboard_card_selector"
-                        android:backgroundTint="@null"
+                                                android:clickable="true"
                         android:focusable="true"
                         android:text="REPUBLIKA E KOSOVES"
                         android:textColor="@android:color/white"
@@ -257,14 +329,14 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <Button
+                    <TextView
                         android:id="@+id/seriesCard"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_margin="5dp"
                         android:layout_weight="1"
                         android:background="@drawable/dashboard_card_selector"
-                        android:backgroundTint="@null"
+                                                android:clickable="true"
                         android:focusable="true"
                         android:text="REPUBLIKA E KOSOVES"
                         android:textColor="@android:color/white"

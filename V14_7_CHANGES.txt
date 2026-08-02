@@ -1,0 +1,9 @@
+KABASHI IPTV V14.7 FUNCTIONAL FIXES
+
+1. Sidebar text is vertically centered and no longer cropped.
+2. Live playback supports provider direct_source URLs, MPEG-TS, and automatic HLS fallback.
+3. EPG uses get_short_epg and falls back to get_simple_data_table, with robust timestamp parsing.
+4. The first manual OK plays/arms the preview and the second OK opens fullscreen, even while buffering.
+5. Live categories are visible and country categories such as USA, Canada, Albania, and Kosovo are prioritized.
+6. Live TV, Movies/VOD, and TV Series pages visibly show the KABASHI Albanian flag/logo background.
+7. V14.6 Kosovo home cards, card sizes, and red/black sidebar styling are preserved.

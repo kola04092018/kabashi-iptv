@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.kabashi.iptv.data.AppSettingsStore
 import com.kabashi.iptv.data.ContentType
 import com.kabashi.iptv.data.MediaEntry
+import com.kabashi.iptv.data.LiveCategory
 import com.kabashi.iptv.data.PlaybackChannel
 import com.kabashi.iptv.data.PlaybackQueueStore
 import com.kabashi.iptv.data.SecureCredentialStore
@@ -138,7 +139,18 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
             result.onSuccess {
-                categoryAdapter.submit(it)
+                val sortedCategories = it.sortedWith(compareBy<LiveCategory> { category ->
+                    val n = category.name.lowercase()
+                    when {
+                        category.id.isBlank() -> 0
+                        n.contains("usa") || n.contains("united states") -> 1
+                        n.contains("can") || n.contains("canada") -> 2
+                        n.contains("alb") || n.contains("alban") -> 3
+                        n.contains("kos") || n.contains("kosov") -> 4
+                        else -> 5
+                    }
+                }.thenBy { category -> category.name.lowercase() })
+                categoryAdapter.submit(sortedCategories)
                 loadItems("")
             }.onFailure { showError(it) }
         }
@@ -209,14 +221,14 @@ class HomeActivity : AppCompatActivity() {
                     PlaybackChannel(
                         id = it.id,
                         name = it.name,
-                        url = client.liveUrl(it.id),
+                        url = client.liveUrl(it),
                         hasCatchUp = it.hasCatchUp
                     )
                 }
                 PlaybackQueueStore.currentIndex = visibleChannels.indexOfFirst { it.id == item.id }.coerceAtLeast(0)
                 openPlayer(
                     name = item.name,
-                    url = client.liveUrl(item.id),
+                    url = client.liveUrl(item),
                     streamId = item.id,
                     hasCatchUp = item.hasCatchUp,
                     allowRecording = true,
@@ -329,7 +341,7 @@ class HomeActivity : AppCompatActivity() {
                     )
                     putStringArrayListExtra(
                         MultiViewActivity.EXTRA_URLS,
-                        ArrayList(chosen.map { client.liveUrl(it.id) })
+                        ArrayList(chosen.map { client.liveUrl(it) })
                     )
                 })
             }

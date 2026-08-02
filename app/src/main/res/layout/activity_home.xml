@@ -1,173 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/albanian_home_background"
-    android:orientation="vertical">
+    android:background="@drawable/kabashi_albanian_background">
+
+    <ImageView
+        android:layout_width="430dp"
+        android:layout_height="430dp"
+        android:layout_gravity="center"
+        android:alpha="0.32"
+        android:contentDescription="KABASHI flag background"
+        android:scaleType="centerInside"
+        android:src="@drawable/app_icon" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="58dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp">
-
-        <ImageView
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:contentDescription="KABASHI IPTV"
-            android:src="@drawable/app_icon" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="KABASHI IPTV"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/channelCount"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:layout_weight="1"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
-
-        <EditText
-            android:id="@+id/searchInput"
-            android:layout_width="225dp"
-            android:layout_height="40dp"
-            android:background="@drawable/input_background"
-            android:hint="Search"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:paddingHorizontal="12dp"
-            android:singleLine="true"
-            android:textColor="@android:color/white"
-            android:textColorHint="@color/text_secondary"
-            android:textSize="13sp" />
-
-        <Button
-            android:id="@+id/searchButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="92dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="6dp"
-            android:text="SEARCH"
-            android:textSize="11sp" />
-
-        <Button
-            android:id="@+id/favoritesButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="110dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="6dp"
-            android:text="★ FAVORITES"
-            android:textSize="10sp" />
-
-        <Button
-            android:id="@+id/multiViewButton"
-            style="@style/KabashiButton.Primary"
-            android:layout_width="105dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="6dp"
-            android:text="MULTIVIEW"
-            android:textSize="11sp" />
-
-        <Button
-            android:id="@+id/settingsButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="100dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="6dp"
-            android:text="SETTINGS"
-            android:textSize="11sp" />
-
-        <Button
-            android:id="@+id/homeButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="80dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="6dp"
-            android:text="HOME"
-            android:textSize="11sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="#D9111722"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp">
-
-        <Button
-            android:id="@+id/liveTvButton"
-            style="@style/KabashiButton.Primary"
-            android:layout_width="130dp"
-            android:layout_height="38dp"
-            android:text="LIVE TV"
-            android:textSize="12sp" />
-
-        <Button
-            android:id="@+id/moviesButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="130dp"
-            android:layout_height="38dp"
-            android:layout_marginStart="8dp"
-            android:text="MOVIES"
-            android:textSize="12sp" />
-
-        <Button
-            android:id="@+id/seriesButton"
-            style="@style/KabashiButton.Secondary"
-            android:layout_width="130dp"
-            android:layout_height="38dp"
-            android:layout_marginStart="8dp"
-            android:text="SERIES"
-            android:textSize="12sp" />
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider" />
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:layout_height="54dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/categories"
-                android:layout_width="210dp"
-                android:layout_height="match_parent"
-                android:background="#D9111722"
-                android:clipToPadding="false"
-                android:padding="10dp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/channels"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:clipToPadding="false"
-                android:padding="10dp" />
+            <ImageView android:layout_width="36dp" android:layout_height="36dp" android:contentDescription="KABASHI IPTV" android:src="@drawable/app_icon" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="9dp" android:text="KABASHI IPTV" android:textColor="@android:color/white" android:textSize="18sp" android:textStyle="bold" />
+            <TextView android:id="@+id/channelCount" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:textColor="#D0D0D0" android:textSize="11sp" />
+            <EditText android:id="@+id/searchInput" android:layout_width="200dp" android:layout_height="38dp" android:background="@drawable/input_background" android:hint="Search" android:imeOptions="actionSearch" android:inputType="text" android:paddingHorizontal="10dp" android:singleLine="true" android:textColor="@android:color/white" android:textColorHint="#AFAFAF" android:textSize="11sp" />
+            <Button android:id="@+id/searchButton" style="@style/KabashiButton.Secondary" android:layout_width="82dp" android:layout_height="38dp" android:layout_marginStart="5dp" android:text="SEARCH" android:textSize="10sp" />
+            <Button android:id="@+id/favoritesButton" style="@style/KabashiButton.Secondary" android:layout_width="104dp" android:layout_height="38dp" android:layout_marginStart="5dp" android:text="★ FAVORITES" android:textSize="9sp" />
+            <Button android:id="@+id/multiViewButton" style="@style/KabashiButton.Primary" android:layout_width="96dp" android:layout_height="38dp" android:layout_marginStart="5dp" android:text="MULTIVIEW" android:textSize="9sp" />
+            <Button android:id="@+id/settingsButton" style="@style/KabashiButton.Secondary" android:layout_width="88dp" android:layout_height="38dp" android:layout_marginStart="5dp" android:text="SETTINGS" android:textSize="9sp" />
+            <Button android:id="@+id/homeButton" style="@style/KabashiButton.Secondary" android:layout_width="72dp" android:layout_height="38dp" android:layout_marginStart="5dp" android:text="HOME" android:textSize="9sp" />
         </LinearLayout>
 
-        <ProgressBar
-            android:id="@+id/loading"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_gravity="center"
-            android:visibility="gone" />
-    </FrameLayout>
-</LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="44dp" android:background="#B8101115" android:gravity="center_vertical" android:orientation="horizontal" android:paddingHorizontal="14dp">
+            <Button android:id="@+id/liveTvButton" style="@style/KabashiButton.Primary" android:layout_width="120dp" android:layout_height="35dp" android:text="LIVE TV" android:textSize="10sp" />
+            <Button android:id="@+id/moviesButton" style="@style/KabashiButton.Secondary" android:layout_width="120dp" android:layout_height="35dp" android:layout_marginStart="7dp" android:text="MOVIES" android:textSize="10sp" />
+            <Button android:id="@+id/seriesButton" style="@style/KabashiButton.Secondary" android:layout_width="120dp" android:layout_height="35dp" android:layout_marginStart="7dp" android:text="SERIES" android:textSize="10sp" />
+        </LinearLayout>
+
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
+                <androidx.recyclerview.widget.RecyclerView android:id="@+id/categories" android:layout_width="210dp" android:layout_height="match_parent" android:background="#C6101115" android:clipToPadding="false" android:padding="8dp" />
+                <androidx.recyclerview.widget.RecyclerView android:id="@+id/channels" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="#99101115" android:clipToPadding="false" android:padding="8dp" />
+            </LinearLayout>
+            <ProgressBar android:id="@+id/loading" android:layout_width="52dp" android:layout_height="52dp" android:layout_gravity="center" android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

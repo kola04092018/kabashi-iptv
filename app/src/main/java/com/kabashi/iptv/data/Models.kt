@@ -35,7 +35,8 @@ data class MediaEntry(
     val catchUpDays: Int = 0,
     val rating: String = "",
     val plot: String = "",
-    val addedTimestamp: Long = 0L
+    val addedTimestamp: Long = 0L,
+    val directSource: String = ""
 )
 
 data class PlaybackChannel(

@@ -9,6 +9,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 class XtreamClient(private val credentials: Credentials) {
     private val server = credentials.serverUrl.trim().trimEnd('/')
@@ -82,7 +85,8 @@ class XtreamClient(private val credentials: Credentials) {
                         type = ContentType.LIVE,
                         extension = "ts",
                         hasCatchUp = item.optIntFlexible("tv_archive") == 1,
-                        catchUpDays = item.optIntFlexible("tv_archive_duration")
+                        catchUpDays = item.optIntFlexible("tv_archive_duration"),
+                        directSource = item.optString("direct_source")
                     )
                 )
             }
@@ -195,13 +199,11 @@ class XtreamClient(private val credentials: Credentials) {
 
 
     suspend fun getEpg(streamId: Int, limit: Int = 12): List<EpgItem> = withContext(Dispatchers.IO) {
-        val response = getJsonObject(apiUrl("get_short_epg", mapOf("stream_id" to streamId.toString(), "limit" to limit.toString())))
-        val array = response.optJSONArray("epg_listings") ?: JSONArray()
-        buildList {
+        fun parseListings(array: JSONArray): List<EpgItem> = buildList {
             for (i in 0 until array.length()) {
                 val item = array.optJSONObject(i) ?: continue
-                val startTs = item.optLongFlexible("start_timestamp")
-                val stopTs = item.optLongFlexible("stop_timestamp")
+                val startTs = normalizeTimestamp(item.optLongFlexible("start_timestamp"), item.optString("start"))
+                val stopTs = normalizeTimestamp(item.optLongFlexible("stop_timestamp"), item.optString("end"))
                 if (startTs <= 0L || stopTs <= startTs) continue
                 add(EpgItem(
                     title = decodeBase64IfNeeded(item.optString("title", "Program")),
@@ -213,10 +215,39 @@ class XtreamClient(private val credentials: Credentials) {
                 ))
             }
         }.sortedBy { it.startTimestamp }
+
+        val short = runCatching {
+            val response = getJsonObject(apiUrl("get_short_epg", mapOf("stream_id" to streamId.toString(), "limit" to limit.toString())))
+            parseListings(response.optJSONArray("epg_listings") ?: JSONArray())
+        }.getOrDefault(emptyList())
+        if (short.isNotEmpty()) return@withContext short
+
+        val simple = runCatching {
+            val response = getJsonObject(apiUrl("get_simple_data_table", mapOf("stream_id" to streamId.toString())))
+            parseListings(response.optJSONArray("epg_listings") ?: JSONArray())
+        }.getOrDefault(emptyList())
+        simple.take(limit)
+    }
+
+    private fun normalizeTimestamp(raw: Long, fallbackDate: String): Long {
+        if (raw > 10_000_000_000L) return raw / 1000L
+        if (raw > 0L) return raw
+        if (fallbackDate.isBlank()) return 0L
+        val patterns = listOf("yyyy-MM-dd HH:mm:ss", "yyyyMMddHHmmss", "yyyy-MM-dd'T'HH:mm:ss")
+        for (pattern in patterns) {
+            val parsed = runCatching {
+                SimpleDateFormat(pattern, Locale.US).apply { timeZone = TimeZone.getDefault() }.parse(fallbackDate)?.time
+            }.getOrNull()
+            if (parsed != null && parsed > 0L) return parsed / 1000L
+        }
+        return 0L
     }
 
     fun liveUrl(streamId: Int): String =
         "$server/live/${path(credentials.username)}/${path(credentials.password)}/$streamId.ts"
+
+    fun liveUrl(entry: MediaEntry): String =
+        entry.directSource.trim().takeIf { it.startsWith("http://") || it.startsWith("https://") } ?: liveUrl(entry.id)
 
     fun vodUrl(streamId: Int, extension: String): String =
         "$server/movie/${path(credentials.username)}/${path(credentials.password)}/$streamId.${safeExtension(extension, "mp4")}" 

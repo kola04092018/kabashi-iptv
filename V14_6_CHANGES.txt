@@ -1,0 +1,9 @@
+KABASHI IPTV V14.6 VISUAL FIX
+
+1. Fixed yellow category cards by replacing Material buttons with focusable TextViews.
+2. All three home cards now visibly use the Kosovo flag artwork.
+3. All three cards show REPUBLIKA E KOSOVES.
+4. Sidebar buttons are now dark red/black instead of blue.
+5. Home remains red-highlighted and focused items use a black frame.
+6. Movies, TV Series, and Live TV browsing pages use the KABASHI/Albanian artwork background.
+7. Existing card sizes are unchanged.
