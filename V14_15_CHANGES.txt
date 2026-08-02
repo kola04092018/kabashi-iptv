@@ -1,0 +1,10 @@
+KABASHI IPTV V14.15 - VLC BUFFERING / LAG FIX
+
+- Loading spinner is delayed briefly and disappears on Playing or near-complete Buffering.
+- Separate UI and playback timers prevent the controls timer from cancelling stream fallback checks.
+- VLC cache increased to 2200 ms for unstable live channels.
+- Late frames may now be dropped/skipped so playback can catch up instead of falling behind.
+- Adds HTTP reconnect/continuous options.
+- If a stream does not start, VLC retries once and then moves to the next candidate URL.
+- Old stream is stopped and pending timers are cancelled before switching channels.
+- VLC channel switching and external-player setting remain included.

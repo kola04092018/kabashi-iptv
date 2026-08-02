@@ -12,8 +12,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.kabashi.iptv.data.PlaybackCompatibilityStore
 import com.kabashi.iptv.data.PlaybackQueueStore
-import com.kabashi.iptv.player.IptvPlayerFactory
 import com.kabashi.iptv.databinding.ActivityVlcAudioPlayerBinding
+import com.kabashi.iptv.player.IptvPlayerFactory
 import org.videolan.libvlc.LibVLC
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
@@ -23,13 +23,29 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
     private lateinit var compatibility: PlaybackCompatibilityStore
     private var libVlc: LibVLC? = null
     private var vlcPlayer: MediaPlayer? = null
-    private val handler = Handler(Looper.getMainLooper())
+
+    private val uiHandler = Handler(Looper.getMainLooper())
+    private val playbackHandler = Handler(Looper.getMainLooper())
+
     private var candidates: List<String> = emptyList()
     private var candidateIndex = 0
     private var streamId = 0
     private var reachedPlaying = false
     private var channelIndex = 0
     private var channelTitle = "VLC Compatibility Mode"
+    private var playGeneration = 0
+    private var restartAttempts = 0
+    private var bufferingSince = 0L
+
+    private val hideControlsRunnable = Runnable {
+        binding.vlcControls.visibility = View.GONE
+    }
+
+    private val showSpinnerRunnable = Runnable {
+        if (!isFinishing && bufferingSince > 0L) {
+            binding.vlcLoading.visibility = View.VISIBLE
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,72 +65,127 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
             candidates = listOf(remembered) + candidates.filterNot { it == remembered }
         }
 
-        channelIndex = PlaybackQueueStore.currentIndex.coerceIn(0, (PlaybackQueueStore.channels.size - 1).coerceAtLeast(0))
-        channelTitle = intent.getStringExtra(EXTRA_TITLE).orEmpty().ifBlank { "VLC Compatibility Mode" }
+        channelIndex = PlaybackQueueStore.currentIndex.coerceIn(
+            0,
+            (PlaybackQueueStore.channels.size - 1).coerceAtLeast(0)
+        )
+        channelTitle = intent.getStringExtra(EXTRA_TITLE).orEmpty()
+            .ifBlank { "VLC Compatibility Mode" }
         binding.vlcTitle.text = channelTitle
+
         if (candidates.isEmpty()) {
             Toast.makeText(this, "No usable stream URL was provided.", Toast.LENGTH_LONG).show()
             finish()
             return
         }
 
-        libVlc = LibVLC(this, arrayListOf(
-            "--network-caching=1400",
-            "--live-caching=1400",
-            "--clock-jitter=0",
-            "--clock-synchro=0",
-            "--audio-time-stretch",
-            "--no-drop-late-frames",
-            "--no-skip-frames"
-        ))
+        libVlc = LibVLC(
+            this,
+            arrayListOf(
+                "--network-caching=2200",
+                "--live-caching=2200",
+                "--clock-jitter=0",
+                "--clock-synchro=0",
+                "--audio-time-stretch",
+                "--drop-late-frames",
+                "--skip-frames"
+            )
+        )
+
         vlcPlayer = MediaPlayer(libVlc).also { player ->
             player.attachViews(binding.vlcVideoLayout, null, false, false)
             player.setEventListener { event ->
                 when (event.type) {
-                    MediaPlayer.Event.Opening, MediaPlayer.Event.Buffering ->
-                        binding.vlcLoading.visibility = View.VISIBLE
+                    MediaPlayer.Event.Opening -> beginBuffering()
+                    MediaPlayer.Event.Buffering -> {
+                        if (event.buffering >= 95f) {
+                            endBuffering()
+                        } else {
+                            beginBuffering()
+                        }
+                    }
                     MediaPlayer.Event.Playing -> {
                         reachedPlaying = true
-                        binding.vlcLoading.visibility = View.GONE
+                        restartAttempts = 0
+                        endBuffering()
                         compatibility.savePreferredUrl(streamId, candidates[candidateIndex])
                         scheduleControlsHide()
                     }
+                    MediaPlayer.Event.Paused, MediaPlayer.Event.Stopped -> endBuffering()
                     MediaPlayer.Event.EncounteredError, MediaPlayer.Event.EndReached -> {
+                        endBuffering()
                         if (!tryNextCandidate()) {
-                            binding.vlcLoading.visibility = View.GONE
-                            Toast.makeText(this, "None of the available stream modes could play this channel.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                this,
+                                "None of the available stream modes could play this channel.",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 }
             }
         }
+
         playCandidate(0)
         binding.vlcVideoLayout.setOnClickListener { toggleControls() }
     }
 
-    private fun playCandidate(index: Int) {
+    private fun beginBuffering() {
+        if (bufferingSince == 0L) bufferingSince = System.currentTimeMillis()
+        uiHandler.removeCallbacks(showSpinnerRunnable)
+        // Avoid a spinner flash during very short network hiccups.
+        uiHandler.postDelayed(showSpinnerRunnable, 450L)
+    }
+
+    private fun endBuffering() {
+        bufferingSince = 0L
+        uiHandler.removeCallbacks(showSpinnerRunnable)
+        binding.vlcLoading.visibility = View.GONE
+    }
+
+    private fun playCandidate(index: Int, isRetry: Boolean = false) {
         if (index !in candidates.indices) return
         candidateIndex = index
         reachedPlaying = false
-        binding.vlcLoading.visibility = View.VISIBLE
+        if (!isRetry) restartAttempts = 0
+        playGeneration += 1
+        val generation = playGeneration
+
+        beginBuffering()
+        binding.vlcControls.visibility = View.VISIBLE
         binding.vlcTitle.text = "$channelTitle  •  Mode ${index + 1}/${candidates.size}  •  ↑/↓ Channel"
+
         val player = vlcPlayer ?: return
         player.stop()
+
         val media = Media(libVlc, Uri.parse(candidates[index])).apply {
             setHWDecoderEnabled(true, false)
-            addOption(":network-caching=1400")
-            addOption(":live-caching=1400")
+            addOption(":network-caching=2200")
+            addOption(":live-caching=2200")
+            addOption(":http-reconnect=true")
+            addOption(":http-continuous=true")
             addOption(":http-user-agent=VLC/3.0.21 LibVLC/3.0.21 KABASHI-IPTV")
             addOption(":http-referrer=http://vpn.lion4k.vip/")
             addOption(":audio-track=-1")
             addOption(":avcodec-hw=any")
+            addOption(":drop-late-frames")
+            addOption(":skip-frames")
         }
+
         player.media = media
         media.release()
         player.play()
-        handler.postDelayed({
-            if (!reachedPlaying && candidateIndex == index) tryNextCandidate()
-        }, 10_000L)
+
+        playbackHandler.removeCallbacksAndMessages(null)
+        playbackHandler.postDelayed({
+            if (generation != playGeneration || reachedPlaying || isFinishing) return@postDelayed
+            if (restartAttempts < 1) {
+                restartAttempts += 1
+                playCandidate(candidateIndex, isRetry = true)
+            } else {
+                tryNextCandidate()
+            }
+        }, 12_000L)
     }
 
     private fun tryNextCandidate(): Boolean {
@@ -123,7 +194,6 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
         playCandidate(next)
         return true
     }
-
 
     private fun buildChannelCandidates(url: String, id: Int): List<String> {
         val alternate = IptvPlayerFactory.alternateLiveUrl(url)
@@ -134,7 +204,9 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
         val remembered = compatibility.preferredUrl(id)
         return if (!remembered.isNullOrBlank() && remembered in base) {
             listOf(remembered) + base.filterNot { it == remembered }
-        } else base
+        } else {
+            base
+        }
     }
 
     private fun switchChannel(delta: Int) {
@@ -143,6 +215,12 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
             Toast.makeText(this, "No other channels are available in this list.", Toast.LENGTH_SHORT).show()
             return
         }
+
+        playGeneration += 1
+        playbackHandler.removeCallbacksAndMessages(null)
+        endBuffering()
+        vlcPlayer?.stop()
+
         channelIndex = (channelIndex + delta + channels.size) % channels.size
         PlaybackQueueStore.currentIndex = channelIndex
         val channel = channels[channelIndex]
@@ -150,42 +228,60 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
         channelTitle = channel.name
         candidates = buildChannelCandidates(channel.url, channel.id)
         candidateIndex = 0
+
         if (candidates.isEmpty()) {
             Toast.makeText(this, "No usable URL for ${channel.name}.", Toast.LENGTH_SHORT).show()
             return
         }
+
         binding.vlcControls.visibility = View.VISIBLE
         playCandidate(0)
         Toast.makeText(this, channel.name, Toast.LENGTH_SHORT).show()
     }
 
     private fun toggleControls() {
-        binding.vlcControls.visibility = if (binding.vlcControls.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        binding.vlcControls.visibility = if (binding.vlcControls.visibility == View.VISIBLE) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
         if (binding.vlcControls.visibility == View.VISIBLE) scheduleControlsHide()
     }
 
     private fun scheduleControlsHide() {
-        handler.removeCallbacksAndMessages(null)
-        handler.postDelayed({ binding.vlcControls.visibility = View.GONE }, 3_000L)
+        uiHandler.removeCallbacks(hideControlsRunnable)
+        uiHandler.postDelayed(hideControlsRunnable, 3_000L)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN) {
             when (event.keyCode) {
-                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_MENU -> {
-                    toggleControls(); return true
-                }
-                KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> {
-                    switchChannel(-1); return true
-                }
-                KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> {
-                    switchChannel(1); return true
-                }
-                KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    if (!tryNextCandidate()) Toast.makeText(this, "No more stream modes.", Toast.LENGTH_SHORT).show()
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_MENU -> {
+                    toggleControls()
                     return true
                 }
-                KeyEvent.KEYCODE_BACK -> { finish(); return true }
+                KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_CHANNEL_UP -> {
+                    switchChannel(-1)
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_CHANNEL_DOWN -> {
+                    switchChannel(1)
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (!tryNextCandidate()) {
+                        Toast.makeText(this, "No more stream modes.", Toast.LENGTH_SHORT).show()
+                    }
+                    return true
+                }
+                KeyEvent.KEYCODE_BACK -> {
+                    finish()
+                    return true
+                }
             }
         }
         return super.dispatchKeyEvent(event)
@@ -200,16 +296,24 @@ class VlcAudioPlayerActivity : AppCompatActivity() {
         } else {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         }
     }
 
     override fun onDestroy() {
-        handler.removeCallbacksAndMessages(null)
-        vlcPlayer?.stop(); vlcPlayer?.detachViews(); vlcPlayer?.release(); vlcPlayer = null
-        libVlc?.release(); libVlc = null
+        uiHandler.removeCallbacksAndMessages(null)
+        playbackHandler.removeCallbacksAndMessages(null)
+        endBuffering()
+        vlcPlayer?.stop()
+        vlcPlayer?.detachViews()
+        vlcPlayer?.release()
+        vlcPlayer = null
+        libVlc?.release()
+        libVlc = null
         super.onDestroy()
     }
 
