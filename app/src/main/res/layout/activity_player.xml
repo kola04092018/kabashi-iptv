@@ -75,7 +75,7 @@
                 android:layout_width="100dp"
                 android:layout_height="40dp"
                 android:layout_marginStart="6dp"
-                android:text="AUDIO FIX"
+                android:text="AUDIO TRACK"
                 android:textSize="10sp" />
 
             <Button

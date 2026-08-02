@@ -11,8 +11,8 @@ android {
         applicationId = "com.kabashi.iptv"
         minSdk = 23
         targetSdk = 34
-        versionCode = 15
-        versionName = "1.8.0"
+        versionCode = 16
+        versionName = "1.8.1"
         buildConfigField("String", "DEFAULT_SERVER_URL", "\"http://vpn.lion4k.vip\"")
     }
 

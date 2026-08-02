@@ -28,8 +28,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.TrackSelectionDialogBuilder
 import com.kabashi.iptv.data.AppSettingsStore
 import com.kabashi.iptv.data.EpgItem
 import com.kabashi.iptv.data.LiveStreamMode
@@ -105,9 +107,10 @@ class PlayerActivity : AppCompatActivity() {
         binding.recordButton.visibility = if (allowRecording) View.VISIBLE else View.GONE
         binding.stopRecordingButton.visibility = if (allowRecording) View.VISIBLE else View.GONE
         binding.subtitleButton.text = if (subtitlesEnabled) "SUBTITLES ON" else "SUBTITLES OFF"
+        binding.audioFixButton.text = "AUDIO TRACK"
 
         binding.externalButton.setOnClickListener { openExternalPlayer(currentUrl()) }
-        binding.audioFixButton.setOnClickListener { tryAudioFix() }
+        binding.audioFixButton.setOnClickListener { showAudioTrackMenu() }
         binding.subtitleButton.setOnClickListener { toggleSubtitles() }
         binding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
@@ -148,6 +151,10 @@ class PlayerActivity : AppCompatActivity() {
                         scheduleControlsHide()
                         playbackHandler.postDelayed({ checkAudioAndFallback() }, 1_300L)
                     }
+                }
+
+                override fun onTracksChanged(tracks: Tracks) {
+                    ensureAudioSelection(tracks)
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
@@ -226,6 +233,43 @@ class PlayerActivity : AppCompatActivity() {
         return true
     }
 
+    private fun ensureAudioSelection(tracks: Tracks) {
+        val exo = player ?: return
+        if (!tracks.containsType(C.TRACK_TYPE_AUDIO)) return
+        exo.volume = 1f
+        if (!tracks.isTypeSelected(C.TRACK_TYPE_AUDIO)) {
+            exo.trackSelectionParameters = exo.trackSelectionParameters.buildUpon()
+                .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, false)
+                .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+                .build()
+        }
+    }
+
+    private fun showAudioTrackMenu() {
+        val exo = player ?: return
+        val tracks = exo.currentTracks
+        if (!tracks.containsType(C.TRACK_TYPE_AUDIO)) {
+            Toast.makeText(
+                this,
+                "No audio track was detected. Trying the alternate stream mode…",
+                Toast.LENGTH_SHORT
+            ).show()
+            tryAudioFix()
+            return
+        }
+
+        TrackSelectionDialogBuilder(
+            this,
+            "Choose audio track",
+            exo,
+            C.TRACK_TYPE_AUDIO
+        )
+            .setAllowAdaptiveSelections(false)
+            .setAllowMultipleOverrides(false)
+            .build()
+            .show()
+    }
+
     private fun tryAudioFix() {
         if (!currentIsLive) {
             player?.volume = 1f
@@ -254,6 +298,7 @@ class PlayerActivity : AppCompatActivity() {
         settings.subtitlesEnabled = subtitlesEnabled
         applySubtitlePreference()
         binding.subtitleButton.text = if (subtitlesEnabled) "SUBTITLES ON" else "SUBTITLES OFF"
+        binding.audioFixButton.text = "AUDIO TRACK"
         Toast.makeText(
             this,
             if (subtitlesEnabled) "Embedded subtitles enabled." else "Subtitles disabled.",

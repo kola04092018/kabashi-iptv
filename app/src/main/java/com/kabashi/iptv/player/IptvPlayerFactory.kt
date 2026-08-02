@@ -2,6 +2,7 @@ package com.kabashi.iptv.player
 
 import android.content.Context
 import androidx.annotation.OptIn
+import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
@@ -48,6 +49,8 @@ object IptvPlayerFactory {
 
         val trackSelector = DefaultTrackSelector(context).apply {
             parameters = buildUponParameters()
+                .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, false)
+                .setPreferredAudioLanguages("sq", "alb", "en")
                 .setSelectUndeterminedTextLanguage(subtitlesEnabled)
                 .build()
         }

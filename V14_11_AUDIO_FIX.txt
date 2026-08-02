@@ -1,0 +1,14 @@
+KABASHI IPTV V14.11 — AUDIO ONLY FIX
+
+No visual or navigation changes were made.
+
+Audio changes:
+1. Added a real AUDIO TRACK button in the built-in player.
+2. The button lists all audio tracks reported by the channel so the user can select one manually.
+3. Audio output is forced back to full volume when tracks become available.
+4. If the player detects audio tracks but none is selected, automatic audio selection is re-enabled.
+5. Albanian audio languages (sq/alb) are preferred, followed by English.
+6. If no audio track is detected, the existing HLS/MPEG-TS alternate-stream fallback is used.
+7. Decoder fallback remains enabled.
+
+All home-screen, flag, favorites, EPG, category, movie, series and MultiView behavior remains unchanged from V14.10.
