@@ -162,7 +162,7 @@ class LiveGuideActivity : AppCompatActivity() {
 
     private fun tryHlsFallback(): Boolean {
         if (fallbackAttempted) return false
-        val fallback = IptvPlayerFactory.hlsFallbackUrl(currentPlaybackUrl) ?: return false
+        val fallback = IptvPlayerFactory.alternateLiveUrl(currentPlaybackUrl) ?: return false
         fallbackAttempted = true
         playPreview(fallback)
         Toast.makeText(this, "Trying alternate live stream mode…", Toast.LENGTH_SHORT).show()

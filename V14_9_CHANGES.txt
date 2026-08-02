@@ -1,0 +1,8 @@
+KABASHI IPTV V14.9
+
+1. Replaced the simplified Kosovo map card with the exact silk-textured Kosovo flag reference supplied by the user.
+2. All three home cards continue to show REPUBLIKA E KOSOVES.
+3. Live playback now tries HLS first in Auto mode and automatically falls back to MPEG-TS.
+4. Fallback also works in the reverse direction.
+5. Movie playback now queries get_vod_info and uses direct_source/stream_url when the provider supplies one.
+6. Recently added movies use the same resolved playback URL logic.

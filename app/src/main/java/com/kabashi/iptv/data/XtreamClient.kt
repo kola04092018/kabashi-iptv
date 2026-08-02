@@ -249,6 +249,30 @@ class XtreamClient(private val credentials: Credentials) {
     fun liveUrl(entry: MediaEntry): String =
         entry.directSource.trim().takeIf { it.startsWith("http://") || it.startsWith("https://") } ?: liveUrl(entry.id)
 
+    suspend fun resolveVodUrl(entry: MediaEntry): String = withContext(Dispatchers.IO) {
+        val fallback = vodUrl(entry.id, entry.extension)
+        runCatching {
+            val response = getJsonObject(apiUrl("get_vod_info", mapOf("vod_id" to entry.id.toString())))
+            val movieData = response.optJSONObject("movie_data")
+            val info = response.optJSONObject("info")
+            val direct = sequenceOf(
+                movieData?.optString("direct_source"),
+                info?.optString("direct_source"),
+                movieData?.optString("stream_url"),
+                info?.optString("stream_url")
+            ).filterNotNull().map { it.trim() }
+                .firstOrNull { it.startsWith("http://") || it.startsWith("https://") }
+            if (!direct.isNullOrBlank()) return@runCatching direct
+
+            val extension = sequenceOf(
+                movieData?.optString("container_extension"),
+                info?.optString("container_extension"),
+                entry.extension
+            ).filterNotNull().map { it.trim() }.firstOrNull { it.isNotBlank() } ?: "mp4"
+            vodUrl(entry.id, extension)
+        }.getOrDefault(fallback)
+    }
+
     fun vodUrl(streamId: Int, extension: String): String =
         "$server/movie/${path(credentials.username)}/${path(credentials.password)}/$streamId.${safeExtension(extension, "mp4")}" 
 

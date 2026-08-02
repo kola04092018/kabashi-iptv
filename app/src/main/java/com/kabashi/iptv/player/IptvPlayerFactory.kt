@@ -69,11 +69,16 @@ object IptvPlayerFactory {
             .build()
     }
 
-    fun hlsFallbackUrl(url: String): String? {
+    fun alternateLiveUrl(url: String): String? {
         val question = url.indexOf('?')
         val path = if (question >= 0) url.substring(0, question) else url
         val query = if (question >= 0) url.substring(question) else ""
-        if (!path.endsWith(".ts", ignoreCase = true)) return null
-        return path.dropLast(3) + ".m3u8" + query
+        return when {
+            path.endsWith(".ts", ignoreCase = true) -> path.dropLast(3) + ".m3u8" + query
+            path.endsWith(".m3u8", ignoreCase = true) -> path.dropLast(5) + ".ts" + query
+            else -> null
+        }
     }
+
+    fun hlsFallbackUrl(url: String): String? = alternateLiveUrl(url)
 }

@@ -125,13 +125,19 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun openRecentMovie(item: MediaEntry) {
-        startActivity(Intent(this, PlayerActivity::class.java).apply {
-            putExtra(PlayerActivity.EXTRA_STREAM_ID, 0)
-            putExtra(PlayerActivity.EXTRA_NAME, item.name)
-            putExtra(PlayerActivity.EXTRA_DIRECT_URL, client.vodUrl(item.id, item.extension))
-            putExtra(PlayerActivity.EXTRA_CATCH_UP, false)
-            putExtra(PlayerActivity.EXTRA_ALLOW_RECORDING, false)
-            putExtra(PlayerActivity.EXTRA_IS_LIVE, false)
-        })
+        binding.loading.visibility = View.VISIBLE
+        lifecycleScope.launch {
+            val resolvedUrl = runCatching { client.resolveVodUrl(item) }
+                .getOrElse { client.vodUrl(item.id, item.extension) }
+            binding.loading.visibility = View.GONE
+            startActivity(Intent(this@DashboardActivity, PlayerActivity::class.java).apply {
+                putExtra(PlayerActivity.EXTRA_STREAM_ID, 0)
+                putExtra(PlayerActivity.EXTRA_NAME, item.name)
+                putExtra(PlayerActivity.EXTRA_DIRECT_URL, resolvedUrl)
+                putExtra(PlayerActivity.EXTRA_CATCH_UP, false)
+                putExtra(PlayerActivity.EXTRA_ALLOW_RECORDING, false)
+                putExtra(PlayerActivity.EXTRA_IS_LIVE, false)
+            })
+        }
     }
 }

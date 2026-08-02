@@ -235,14 +235,22 @@ class HomeActivity : AppCompatActivity() {
                     isLive = true
                 )
             }
-            ContentType.VOD -> openPlayer(
-                name = item.name,
-                url = client.vodUrl(item.id, item.extension),
-                streamId = 0,
-                hasCatchUp = false,
-                allowRecording = false,
-                isLive = false
-            )
+            ContentType.VOD -> {
+                setLoading(true)
+                lifecycleScope.launch {
+                    val resolvedUrl = runCatching { client.resolveVodUrl(item) }
+                        .getOrElse { client.vodUrl(item.id, item.extension) }
+                    setLoading(false)
+                    openPlayer(
+                        name = item.name,
+                        url = resolvedUrl,
+                        streamId = 0,
+                        hasCatchUp = false,
+                        allowRecording = false,
+                        isLive = false
+                    )
+                }
+            }
             ContentType.SERIES -> loadSeriesEpisodes(item)
         }
     }

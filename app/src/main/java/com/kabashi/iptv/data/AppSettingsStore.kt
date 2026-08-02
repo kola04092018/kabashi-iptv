@@ -30,8 +30,8 @@ class AppSettingsStore(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_COMPACT_INTERFACE, value).apply()
 
     fun preferredLiveUrl(url: String): String = when (liveStreamMode) {
-        LiveStreamMode.AUTO, LiveStreamMode.MPEG_TS -> url
-        LiveStreamMode.HLS -> toHls(url) ?: url
+        LiveStreamMode.AUTO, LiveStreamMode.HLS -> toHls(url) ?: url
+        LiveStreamMode.MPEG_TS -> toTs(url) ?: url
     }
 
     private fun toHls(url: String): String? {
@@ -40,6 +40,14 @@ class AppSettingsStore(context: Context) {
         val query = if (queryIndex >= 0) url.substring(queryIndex) else ""
         if (!path.endsWith(".ts", ignoreCase = true)) return null
         return path.dropLast(3) + ".m3u8" + query
+    }
+
+    private fun toTs(url: String): String? {
+        val queryIndex = url.indexOf('?')
+        val path = if (queryIndex >= 0) url.substring(0, queryIndex) else url
+        val query = if (queryIndex >= 0) url.substring(queryIndex) else ""
+        if (!path.endsWith(".m3u8", ignoreCase = true)) return null
+        return path.dropLast(5) + ".ts" + query
     }
 
     private companion object {

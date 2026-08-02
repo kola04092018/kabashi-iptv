@@ -165,7 +165,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun play(url: String, title: String, live: Boolean) {
-        hlsFallbackAttempted = url.contains(".m3u8", ignoreCase = true)
+        hlsFallbackAttempted = false
         playInternal(url, title, live)
     }
 
@@ -196,7 +196,7 @@ class PlayerActivity : AppCompatActivity() {
             playWhenReady = true
         }
 
-        if (live && settings.liveStreamMode == LiveStreamMode.AUTO && IptvPlayerFactory.hlsFallbackUrl(url) != null) {
+        if (live && settings.liveStreamMode == LiveStreamMode.AUTO && IptvPlayerFactory.alternateLiveUrl(url) != null) {
             playbackHandler.postDelayed({
                 val exo = player ?: return@postDelayed
                 if (generation != playbackGeneration || hlsFallbackAttempted) return@postDelayed
@@ -220,7 +220,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun tryAutomaticFallback(): Boolean {
         if (!currentIsLive || hlsFallbackAttempted) return false
-        val fallback = IptvPlayerFactory.hlsFallbackUrl(currentUrl()) ?: return false
+        val fallback = IptvPlayerFactory.alternateLiveUrl(currentUrl()) ?: return false
         hlsFallbackAttempted = true
         playInternal(fallback, currentTitle, true)
         return true
@@ -237,13 +237,13 @@ class PlayerActivity : AppCompatActivity() {
         val alternate = if (current.contains(".m3u8", ignoreCase = true)) {
             PlaybackQueueStore.channels.getOrNull(PlaybackQueueStore.currentIndex)?.url ?: liveUrl
         } else {
-            IptvPlayerFactory.hlsFallbackUrl(current)
+            IptvPlayerFactory.alternateLiveUrl(current)
         }
         if (alternate.isNullOrBlank() || alternate == current) {
             Toast.makeText(this, "No alternate stream mode is available. Try External Player.", Toast.LENGTH_LONG).show()
             return
         }
-        hlsFallbackAttempted = alternate.contains(".m3u8", ignoreCase = true)
+        hlsFallbackAttempted = true
         player?.volume = 1f
         playInternal(alternate, currentTitle, true)
         Toast.makeText(this, "Switched audio/stream mode.", Toast.LENGTH_SHORT).show()
