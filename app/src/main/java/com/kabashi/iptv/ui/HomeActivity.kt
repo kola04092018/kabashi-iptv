@@ -282,7 +282,7 @@ class HomeActivity : AppCompatActivity() {
         val checked = BooleanArray(channels.size)
         val selected = linkedSetOf<Int>()
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Choose up to 4 channels")
+            .setTitle("MULTIVIEW — Select 1 to 4 channels")
             .setMultiChoiceItems(channels.map { it.name }.toTypedArray(), checked) { dialogInterface, which, isChecked ->
                 if (isChecked && selected.size >= 4) {
                     checked[which] = false
@@ -294,8 +294,8 @@ class HomeActivity : AppCompatActivity() {
                     selected.remove(which)
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Open") { _, _ ->
+            .setNegativeButton("CANCEL", null)
+            .setPositiveButton("OPEN MULTIVIEW") { _, _ ->
                 if (selected.isEmpty()) {
                     Toast.makeText(this, "Select at least one channel.", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton

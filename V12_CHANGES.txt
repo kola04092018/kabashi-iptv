@@ -1,0 +1,9 @@
+KOLA IPTV V12
+
+1. Server URL is built in: http://vpn.lion4k.vip
+2. Login screen asks only for username and password.
+3. Albanian flag background and KOLA logo.
+4. Kosovo flag category cards.
+5. Black selection/focus frame.
+6. MultiView opens a manual 1–4 channel selection list.
+7. Existing saved-login, VOD, Series, subtitle, audio fallback and fast player features remain included.

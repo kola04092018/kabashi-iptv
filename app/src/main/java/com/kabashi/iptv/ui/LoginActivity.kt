@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.kabashi.iptv.BuildConfig
 import com.kabashi.iptv.data.Credentials
 import com.kabashi.iptv.data.SecureCredentialStore
 import com.kabashi.iptv.data.XtreamClient
@@ -28,24 +29,24 @@ class LoginActivity : AppCompatActivity() {
 
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.providerText.text = "Provider: ${BuildConfig.DEFAULT_SERVER_URL.removePrefix("http://").removePrefix("https://")}"
         binding.loginButton.setOnClickListener { signIn() }
     }
 
     private fun signIn() {
-        val server = binding.serverInput.text?.toString()?.trim().orEmpty()
         val username = binding.usernameInput.text?.toString()?.trim().orEmpty()
         val password = binding.passwordInput.text?.toString().orEmpty()
 
-        if (server.isBlank() || username.isBlank() || password.isBlank()) {
-            Toast.makeText(this, "Enter the server URL, username, and password.", Toast.LENGTH_LONG).show()
-            return
-        }
-        if (!server.startsWith("http://") && !server.startsWith("https://")) {
-            Toast.makeText(this, "Server URL must begin with http:// or https://", Toast.LENGTH_LONG).show()
+        if (username.isBlank() || password.isBlank()) {
+            Toast.makeText(this, "Enter your username and password.", Toast.LENGTH_LONG).show()
             return
         }
 
-        val credentials = Credentials(server.trimEnd('/'), username, password)
+        val credentials = Credentials(
+            serverUrl = BuildConfig.DEFAULT_SERVER_URL.trimEnd('/'),
+            username = username,
+            password = password
+        )
         setLoading(true)
         lifecycleScope.launch {
             XtreamClient(credentials).authenticate()
@@ -68,7 +69,6 @@ class LoginActivity : AppCompatActivity() {
     private fun setLoading(loading: Boolean) {
         binding.loading.visibility = if (loading) View.VISIBLE else View.GONE
         binding.loginButton.isEnabled = !loading
-        binding.serverInput.isEnabled = !loading
         binding.usernameInput.isEnabled = !loading
         binding.passwordInput.isEnabled = !loading
     }
