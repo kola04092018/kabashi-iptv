@@ -25,9 +25,9 @@ class SettingsActivity : AppCompatActivity() {
             LiveStreamMode.HLS -> binding.streamModeGroup.check(R.id.streamHls)
         }
         when (settings.playbackEngine) {
-            PlaybackEngine.INTERNAL -> binding.playerInternal.check()
-            PlaybackEngine.VLC -> binding.playerVlc.check()
-            PlaybackEngine.EXTERNAL -> binding.playerExternal.check()
+            PlaybackEngine.INTERNAL -> binding.playerModeGroup.check(R.id.playerInternal)
+            PlaybackEngine.VLC -> binding.playerModeGroup.check(R.id.playerVlc)
+            PlaybackEngine.EXTERNAL -> binding.playerModeGroup.check(R.id.playerExternal)
         }
         binding.subtitleSwitch.isChecked = settings.subtitlesEnabled
         binding.autoHideSwitch.isChecked = settings.autoHideControls
