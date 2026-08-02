@@ -1,0 +1,12 @@
+IMPORTANT
+
+Upload the CONTENTS of this folder to the ROOT of your GitHub repository.
+After upload, the repository Code page must show these directly:
+
+app/
+.github/
+build.gradle.kts
+settings.gradle.kts
+gradle.properties
+
+Do not upload the outer KABASHI_IPTV_GITHUB_READY_FIXED folder itself.

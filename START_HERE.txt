@@ -1,0 +1,20 @@
+KABASHI IPTV — EASIEST WAY TO GET THE APK
+
+Do not run any local builder. This package is prepared for GitHub Actions.
+
+1. Create a free GitHub account at github.com if you do not have one.
+2. On GitHub choose New repository.
+3. Name it: kabashi-iptv-firetv
+4. Choose Private, then Create repository.
+5. Choose: uploading an existing file.
+6. Extract this ZIP on Windows.
+7. Drag EVERY file and folder from inside KABASHI_IPTV_GITHUB_READY into GitHub's upload box.
+   Important: upload the CONTENTS, not the outer folder itself.
+8. Click Commit changes.
+9. The APK build starts automatically.
+10. Open the Actions tab, open Build Fire TV APK, then open the newest successful run.
+11. Under Artifacts, download KABASHI-IPTV-FireTV-APK.
+12. Extract that downloaded ZIP. Inside is KABASHI-IPTV-FireTV.apk.
+
+The APK is debug-signed by Android's build system and can be sideloaded to a Fire TV.
+Use only IPTV services and streams you are authorized to access.
