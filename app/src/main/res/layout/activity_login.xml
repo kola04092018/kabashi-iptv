@@ -2,60 +2,60 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/albanian_home_background">
+    android:background="@drawable/kabashi_login_background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="42dp">
+        android:padding="58dp">
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:padding="28dp">
+            android:layout_height="match_parent"
+            android:layout_weight="1.25"
+            android:gravity="center"
+            android:orientation="vertical">
 
             <ImageView
-                android:layout_width="170dp"
-                android:layout_height="170dp"
-                android:contentDescription="KOLA IPTV logo"
+                android:layout_width="230dp"
+                android:layout_height="230dp"
+                android:contentDescription="KABASHI IPTV logo"
                 android:src="@drawable/app_icon" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:text="KOLA IPTV"
+                android:layout_marginTop="18dp"
+                android:text="KABASHI IPTV"
                 android:textColor="@android:color/white"
-                android:textSize="34sp"
+                android:textSize="38sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="Android TV &amp; Fire TV Player"
-                android:textColor="#E0E0E0"
-                android:textSize="16sp" />
+                android:layout_marginTop="7dp"
+                android:text="CREATED BY MHILL KABASHI"
+                android:textColor="#F2C230"
+                android:textSize="15sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="430dp"
+            android:layout_width="455dp"
             android:layout_height="wrap_content"
             android:background="@drawable/panel_background"
             android:orientation="vertical"
-            android:padding="30dp">
+            android:padding="32dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="SIGN IN"
                 android:textColor="@android:color/white"
-                android:textSize="25sp"
+                android:textSize="27sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -64,13 +64,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Provider connected"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp" />
+                android:textColor="#C8C8C8"
+                android:textSize="12sp" />
 
             <EditText
                 android:id="@+id/usernameInput"
                 style="@style/KabashiInput"
-                android:layout_marginTop="22dp"
+                android:layout_marginTop="24dp"
                 android:hint="Username"
                 android:imeOptions="actionNext"
                 android:inputType="text" />
@@ -78,7 +78,7 @@
             <EditText
                 android:id="@+id/passwordInput"
                 style="@style/KabashiInput"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="13dp"
                 android:hint="Password"
                 android:imeOptions="actionDone"
                 android:inputType="textPassword" />
@@ -87,8 +87,8 @@
                 android:id="@+id/loginButton"
                 style="@style/KabashiButton.Primary"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:layout_marginTop="20dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="22dp"
                 android:text="LOGIN" />
 
             <ProgressBar
@@ -96,17 +96,8 @@
                 android:layout_width="34dp"
                 android:layout_height="34dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="14dp"
                 android:visibility="gone" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:text="Use only authorized IPTV services."
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

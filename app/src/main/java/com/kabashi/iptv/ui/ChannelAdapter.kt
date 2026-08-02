@@ -22,7 +22,9 @@ class ChannelAdapter(
     inner class Holder(private val binding: ItemChannelBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: MediaEntry, position: Int) {
             binding.channelNumber.text = (position + 1).toString()
-            binding.channelName.text = (if (isFavorite?.invoke(item) == true) "★  " else "") + item.name
+            val favorite = isFavorite?.invoke(item) == true
+            binding.channelName.text = item.name
+            binding.favoriteStar.visibility = if (favorite) View.VISIBLE else View.GONE
             binding.catchUpLabel.text = when (item.type) {
                 ContentType.LIVE -> if (item.hasCatchUp) "LIVE  •  CATCH-UP" else "LIVE"
                 ContentType.VOD -> buildString {

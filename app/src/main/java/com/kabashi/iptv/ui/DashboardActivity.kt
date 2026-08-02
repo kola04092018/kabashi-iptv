@@ -45,6 +45,15 @@ class DashboardActivity : AppCompatActivity() {
         binding.liveCard.setOnClickListener { startActivity(Intent(this, LiveGuideActivity::class.java)) }
         binding.moviesCard.setOnClickListener { openSection(ContentType.VOD) }
         binding.seriesCard.setOnClickListener { openSection(ContentType.SERIES) }
+
+        binding.homeMenu.setOnClickListener { binding.liveCard.requestFocus() }
+        binding.liveMenu.setOnClickListener { startActivity(Intent(this, LiveGuideActivity::class.java)) }
+        binding.moviesMenu.setOnClickListener { openSection(ContentType.VOD) }
+        binding.seriesMenu.setOnClickListener { openSection(ContentType.SERIES) }
+        binding.catchupMenu.setOnClickListener { startActivity(Intent(this, LiveGuideActivity::class.java)) }
+        binding.favoritesMenu.setOnClickListener { openSection(ContentType.LIVE) }
+        binding.multiviewMenu.setOnClickListener { openSection(ContentType.LIVE) }
+
         binding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }

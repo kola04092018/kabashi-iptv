@@ -1,0 +1,13 @@
+KABASHI IPTV V14 CORRECTED
+
+Confirmed corrections:
+1. App name restored to KABASHI IPTV.
+2. New left-sidebar dashboard matching the approved reference structure.
+3. Albanian eagle/brick artwork supplied by the user is used for the logo and login screen.
+4. KABASHI is printed at the bottom of the app logo.
+5. Kosovo flag cards remain for Live TV, Movies/VOD, and TV Series.
+6. Live TV EPG page redesigned toward the approved Style 2 vertical channel-focus layout.
+7. Favorite channels are sorted to the top of the list.
+8. A gold star appears on every favorite channel.
+9. Favorites sorting also applies to movie and TV series browsing.
+10. Existing built-in provider URL, saved login, player, subtitles, MultiView, and playback features remain.

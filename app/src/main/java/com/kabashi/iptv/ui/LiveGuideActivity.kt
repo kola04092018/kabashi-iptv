@@ -44,7 +44,15 @@ class LiveGuideActivity : AppCompatActivity() {
 
     private fun loadCategories() { setLoading(true); lifecycleScope.launch { runCatching { client.getLiveCategories() }.onSuccess { categoryAdapter.submit(it); loadChannels("") }.onFailure(::error) } }
     private fun loadChannels(category: String) { setLoading(true); lifecycleScope.launch { runCatching { client.getLiveStreams(category) }.onSuccess { allChannels=it; showChannels(); setLoading(false); if(it.isNotEmpty()) selectChannel(it.first()) }.onFailure(::error) } }
-    private fun showChannels() { val list=if(favoritesOnly) favorites.filter(ContentType.LIVE,allChannels) else allChannels; channelAdapter.submit(list); binding.channelCount.text="${list.size} channels" }
+    private fun showChannels() {
+        val list = if (favoritesOnly) {
+            favorites.filter(ContentType.LIVE, allChannels)
+        } else {
+            allChannels.sortedWith(compareByDescending<MediaEntry> { favorites.isFavorite(it) }.thenBy { it.name.lowercase() })
+        }
+        channelAdapter.submit(list)
+        binding.channelCount.text = "${list.size} channels"
+    }
 
     private fun selectChannel(item: MediaEntry) {
         if (selected?.id == item.id && player?.isPlaying == true) { openFullscreen(item); return }

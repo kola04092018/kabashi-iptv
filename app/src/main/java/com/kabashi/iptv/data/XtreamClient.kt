@@ -265,7 +265,7 @@ class XtreamClient(private val credentials: Credentials) {
             requestMethod = "GET"
             connectTimeout = 15_000
             readTimeout = 30_000
-            setRequestProperty("User-Agent", "KOLA-IPTV/1.6 FireTV")
+            setRequestProperty("User-Agent", "KABASHI-IPTV/1.6 FireTV")
             setRequestProperty("Accept", "application/json")
         }
         try {

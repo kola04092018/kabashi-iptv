@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
-    android:layout_marginBottom="6dp"
+    android:layout_height="64dp"
+    android:layout_marginBottom="5dp"
     android:background="@drawable/channel_selector"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="10dp">
+    android:paddingHorizontal="8dp">
 
     <TextView
         android:id="@+id/channelNumber"
-        android:layout_width="42dp"
+        android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textColor="@color/text_secondary"
-        android:textSize="12sp"
+        android:textColor="#B8B8B8"
+        android:textSize="11sp"
         android:textStyle="bold" />
 
     <ImageView
         android:id="@+id/channelLogo"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
         android:contentDescription="Channel logo"
         android:scaleType="centerInside"
         android:src="@drawable/channel_placeholder" />
@@ -30,7 +30,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="8dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -41,18 +41,28 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@android:color/white"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/catchUpLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/accent"
-            android:textSize="10sp"
+            android:textColor="#E53935"
+            android:textSize="9sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/favoriteStar"
+        android:layout_width="28dp"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="★"
+        android:textColor="#FFD33D"
+        android:textSize="20sp"
+        android:visibility="gone" />
 </LinearLayout>

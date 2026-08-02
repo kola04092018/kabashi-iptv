@@ -160,7 +160,11 @@ class HomeActivity : AppCompatActivity() {
                 loadedItems = if (sectionAtStart == ContentType.VOD) {
                     it.sortedByDescending { movie -> movie.addedTimestamp }
                 } else it
-                channelAdapter.submit(loadedItems)
+                val orderedItems = loadedItems.sortedWith(
+                    compareByDescending<MediaEntry> { favorites.isFavorite(it) }
+                        .thenBy { item -> item.name.lowercase() }
+                )
+                channelAdapter.submit(orderedItems)
                 updateCount(loadedItems.size)
                 setLoading(false)
                 binding.channels.scrollToPosition(0)
@@ -178,7 +182,14 @@ class HomeActivity : AppCompatActivity() {
 
     private fun applySearch(query: String) {
         val normalized = query.trim()
-        val base = if (favoritesOnly) favorites.filter(currentSection, loadedItems) else loadedItems
+        val base = if (favoritesOnly) {
+            favorites.filter(currentSection, loadedItems)
+        } else {
+            loadedItems.sortedWith(
+                compareByDescending<MediaEntry> { favorites.isFavorite(it) }
+                    .thenBy { item -> item.name.lowercase() }
+            )
+        }
         val result = if (normalized.isBlank()) base else base.filter { it.name.contains(normalized, ignoreCase = true) }
         channelAdapter.submit(result)
         updateCount(result.size)
